@@ -52,6 +52,82 @@ User-data lives at `~/.md-publisher/`:
 └── themes/<slug>/      user-created themes (theme-advisor output)
 ```
 
+## Verifying the install
+
+After cloning and configuring as a Claude Code plugin, run the bootstrap probe in your terminal:
+
+```bash
+python <plugin-root>/runtime/bootstrap.py --status
+```
+
+A healthy install prints all three checks as `OK`:
+
+```
+md-publisher bootstrap status
+  user runtime:    /home/.../.md-publisher/runtime
+  venv:            OK  (.../.venv/Scripts/python.exe)
+  mmdc:            OK  (.../node_modules/@mermaid-js/mermaid-cli/src/cli.js)
+  gtk:             OK
+                   GTK runtime found at: ...
+```
+
+If any line says `MISSING`, see Troubleshooting below.
+
+To smoke-test the whole pipeline end-to-end without involving Claude Code, render any markdown file directly:
+
+```bash
+python <plugin-root>/skills/publish/scripts/publish.py <some-doc.md>
+```
+
+A successful run writes `<some-doc-dir>/.md-publisher/<timestamp>/<slug>.pdf` and prints the path. If you don't have a test markdown handy, the bake-off corpus at `~/repos/md-publisher-bakeoff/corpus/transformers-explainer.md` (if present from the project's research history) is a known-good 6-page input with mermaid diagrams.
+
+## Troubleshooting
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `--status` reports `gtk: MISSING` (Windows) | Pango / Cairo / GDK-Pixbuf DLLs not on the search path | Install Inkscape (https://inkscape.org) or GIMP — they bundle a complete GTK3 stack that the plugin auto-detects. Alternatively install [GTK3 Runtime](https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer). If GTK lives somewhere unusual, set `WEASYPRINT_DLL_DIR=<gtk-bin-dir>`. |
+| `--status` reports `gtk: MISSING` (Linux) | System packages missing | `sudo apt install libpango-1.0-0 libcairo2 libgdk-pixbuf2.0-0` (Debian/Ubuntu); equivalent for other distros |
+| `--status` reports `gtk: MISSING` (macOS) | Homebrew packages missing | `brew install pango cairo gdk-pixbuf libffi` |
+| `[bootstrap] ERROR: npm not on PATH` | Node.js not installed | Install Node 18+ from https://nodejs.org |
+| `mmdc failed for ...` with `Failed to launch the browser process` (Linux/CI/WSL) | Chromium's user-namespace sandbox can't initialize in the current environment | Set `MD_PUBLISHER_DISABLE_SANDBOX=1` and re-run. **Do NOT set this on a multi-user system** — it disables a primary defense layer. |
+| `pdftotext` extraction returns no mermaid labels | Diagrams rasterized somewhere in the pipeline | This shouldn't happen with the bundled toolchain; if it does, check that mermaid-config.json has `htmlLabels: false`. File a bug with the input that triggered it. |
+| `WeasyPrint` import error referencing `cffi` | venv corrupted from an interrupted install | `python <plugin-root>/runtime/bootstrap.py --force` rebuilds both the venv and node_modules |
+| Themed build renders but looks wrong (wrong font / wrong color) | Theme CSS or mermaid-config typo, or the theme's font isn't installed locally | Open `~/.md-publisher/themes/<slug>/preview.html` in a browser to see how the theme is supposed to look in isolation. If the preview looks right but the PDF doesn't, file a bug with the input. |
+| Cover page missing | Cover skipped via `--no-cover`, or no `cover.css` in the user theme | User themes scaffolded by theme-advisor get a default `cover.css`; user themes hand-built without one render with the universal base layout only (no per-theme decoration). Add a `cover.css` to enable theme-specific cover styling. |
+
+## Contributing
+
+### Adding a new built-in theme
+
+1. Add a `themes/<name-mode>/` directory with `style.css` (full WeasyPrint stylesheet) and `mermaid-config.json` (mmdc theme config). Optionally include `cover.css` for theme-specific cover-page treatment.
+2. Add a per-theme block to `themes/theme-spec.json` under `themes.<name>` with the palette + fonts + per-tag mermaid styling. Mirror the structure of an existing theme block.
+3. Test: `python skills/publish/scripts/publish.py <some-doc.md> --theme <name> --mode <mode>`.
+
+If your theme is mode-aware (light + dark), create both directories and both spec entries — the resolver computes the slug as `<name>-<mode>`.
+
+### Adding a new skill
+
+1. `mkdir -p skills/<skill-name>/scripts`
+2. Write `skills/<skill-name>/SKILL.md` with third-person frontmatter description, specific trigger phrases, and an imperative-form body. Reference any helper scripts under `${CLAUDE_PLUGIN_ROOT}/skills/<skill-name>/scripts/...`.
+3. Helper scripts in `scripts/` should accept JSON on stdin or argparse args — never interpolate user-supplied values into source strings.
+4. Skill auto-discovery is automatic; restart Claude Code to pick up the new skill.
+
+### Filing bugs and feature requests
+
+Bugs: include the markdown that triggered the issue, the full command line, the exit code, and any output from `python <plugin-root>/runtime/bootstrap.py --status`.
+
+Theme-quality bugs: also include screenshots of the resulting PDF and the theme's `preview.html` so it's clear whether the issue is in the theme definition or the renderer.
+
+### Code style
+
+- Python: standard library only in lib/ and skills/scripts/ unless the venv has the dep (only WeasyPrint, Pygments, markdown allowed). No third-party deps in scripts that run from the system Python.
+- Skills: follow the patterns of the existing four; keep SKILL.md under ~2000 words and push detail into scripts/ or references/.
+- Files over 500 lines are a smell; refactor.
+
+## Project history
+
+This plugin is the productized output of a four-toolchain bake-off (Chromium + Playwright, WeasyPrint, Typst, Pandoc + XeLaTeX) that produced 24 themed PDFs from the same corpus. WeasyPrint won on the right combination of theming flexibility, install footprint, and aesthetic-fidelity ceiling for the audience-targeted themes. The full comparison + the four implementations live at `~/repos/md-publisher-bakeoff/` if you need to verify or reproduce the decision.
+
 ## License
 
 MIT — see [LICENSE](LICENSE).

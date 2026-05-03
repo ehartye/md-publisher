@@ -1,0 +1,48 @@
+{
+  "$comment": "Draft marketplace entry for md-publisher. Copy this object into the `plugins` array of your target marketplace's marketplace.json. Update `repository`, `homepage`, and `installFrom` to match the published location.",
+
+  "name": "md-publisher",
+  "displayName": "md-publisher",
+  "description": "Turn markdown documents (with embedded mermaid diagrams) into themed, searchable, paged PDFs via WeasyPrint. Bundles four skills (publish, preprocess, theme-advisor, theme-gallery) plus six built-in themes (atlas/phosphor/arcade in light + dark) and a default editorial theme.",
+  "longDescription": "md-publisher is the WeasyPrint-based winner of a four-toolchain bake-off. It produces print-ready PDFs from any markdown document, with full mermaid support — diagram node labels survive as searchable text in the final PDF (Ctrl+F finds them). Themes are interchangeable per (theme, mode), and a custom theme can be created interactively via the theme-advisor skill in under 5 minutes.\n\nIncludes: page covers with title/subtitle/author/date derived from YAML front matter or first h1; auto-resize for oversized mermaid diagrams; per-node coloring via universal `:::ingress / :::core / :::transform / :::bridge` tags; separate user-themes directory under `~/.md-publisher/themes/` so customizations persist across plugin updates.",
+
+  "version": "0.1.0",
+  "author": {
+    "name": "Eric Hartye",
+    "email": "eric@hartye.com"
+  },
+  "license": "MIT",
+
+  "category": "publishing",
+  "tags": [
+    "markdown",
+    "pdf",
+    "weasyprint",
+    "mermaid",
+    "publishing",
+    "themes",
+    "paged-media",
+    "documentation"
+  ],
+
+  "homepage": "https://github.com/<your-account>/md-publisher",
+  "repository": "https://github.com/<your-account>/md-publisher.git",
+  "installFrom": "github:<your-account>/md-publisher",
+
+  "skills": [
+    { "name": "publish",        "summary": "Render markdown to a themed PDF" },
+    { "name": "preprocess",     "summary": "LLM-tag mermaid diagrams for theme-aware coloring" },
+    { "name": "theme-advisor",  "summary": "Interactive Q&A flow that creates a custom theme" },
+    { "name": "theme-gallery",  "summary": "List + preview built-in and user-installed themes" }
+  ],
+
+  "requirements": {
+    "node": ">=18",
+    "python": ">=3.10",
+    "system": [
+      "GTK 3 runtime (Pango / Cairo / GDK-Pixbuf) — on Windows the easiest source is Inkscape or GIMP; on Linux apt install libpango-1.0-0 libcairo2 libgdk-pixbuf2.0-0; on macOS brew install pango cairo gdk-pixbuf libffi"
+    ]
+  },
+
+  "firstRunBehavior": "On first invocation of any skill, the plugin auto-installs a Python venv (WeasyPrint, markdown, Pygments) and Node deps (mermaid-cli + Puppeteer Chromium) to ~/.md-publisher/runtime/. Takes ~2 minutes; downloads ~250 MB; subsequent runs reuse the cache."
+}
