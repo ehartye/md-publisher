@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Turn markdown documents (with embedded mermaid diagrams) into themed, searchable, paged PDFs via WeasyPrint. Bundles four skills (publish, preprocess, theme-advisor, theme-gallery) plus six built-in themes (atlas/phosphor/arcade in light + dark).",
   "author": {
-    "name": "Eric Hart",
+    "name": "Eric Hartye",
     "email": "eric@hartye.com"
   },
   "license": "MIT",
