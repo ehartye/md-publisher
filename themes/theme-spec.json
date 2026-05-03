@@ -1,0 +1,231 @@
+{
+  "$schema": "./theme-spec.schema.json",
+  "version": "1.0",
+  "description": "Source of truth for ATLAS / PHOSPHOR / ARCADE theme tokens. Each toolchain (chromium, weasyprint, typst, pandoc-latex) translates this into its native theme format. Hand-edits to a single token here should propagate to all four approaches when each agent re-runs translation.",
+  "universalTags": {
+    "ingress": "Entry / exit nodes. Sources, sinks, terminals in the data flow.",
+    "core": "Primary processing units. The 'main thing' the diagram is about.",
+    "transform": "Auxiliary processing, projections, conversions.",
+    "bridge": "Connector / aggregation / intermediate nodes."
+  },
+  "themes": {
+    "atlas": {
+      "displayName": "ATLAS",
+      "audience": "corporate / customer-facing / non-technical",
+      "tagline": "Editorial-trust serif on warm bone, red as punctuation only.",
+      "fonts": {
+        "display": { "family": "Newsreader", "weight": 800, "opsz": 32, "italic": true, "_note": "Page title is italic; section headings are non-italic at the same family/weight." },
+        "body": { "family": "Newsreader", "weight": 400, "opsz": 14, "italic": false },
+        "sansAccent": { "family": "Sora", "weights": [400, 500, 600], "_note": "TOC, captions, table headers, eyebrow tags." },
+        "mono": { "family": "JetBrains Mono", "weight": 300 }
+      },
+      "details": [
+        "Red 1px rule under h1 headings (96px wide, accent color)",
+        "Page numbers in TOC use Sora 500 in accent color",
+        "Code block has a 2px left rule in accent color",
+        "Italic for emphasis (Newsreader italic, very distinctive)",
+        "Sans accent (Sora) for table column headers, uppercase, letterspaced 0.06em",
+        "h1 and h2 use Newsreader 800 with opsz=32 and tight letter-spacing -0.02em"
+      ],
+      "modes": {
+        "light": {
+          "bg":         "#F8F1E7",
+          "paper":      "#FFFFFF",
+          "ink":        "#0F1620",
+          "inkSoft":    "#4A5568",
+          "accent":     "#B22234",
+          "accentSoft": "#DDD3C1",
+          "rule":       "#DDD3C1",
+          "codeBg":     "#F4ECDB",
+          "codeText":   "#0F1620",
+          "tableStripe":"#F8F1E7"
+        },
+        "dark": {
+          "bg":         "#0F1620",
+          "paper":      "#1A2330",
+          "ink":        "#F8F1E7",
+          "inkSoft":    "#B0BAC9",
+          "accent":     "#E84855",
+          "accentSoft": "#2E3947",
+          "rule":       "#2E3947",
+          "codeBg":     "#1F2832",
+          "codeText":   "#F8F1E7",
+          "tableStripe":"#14202B"
+        }
+      },
+      "mermaid": {
+        "_note": "tagStyling.<mode>.<tag> gives the four classDef-able properties: fill, stroke, color, strokeWidth (px). Edges and arrowheads use lineColor (theme inkSoft).",
+        "tagStyling": {
+          "light": {
+            "ingress":   { "fill": "#FFFFFF", "stroke": "#B22234", "color": "#0F1620", "strokeWidth": 2 },
+            "core":      { "fill": "#FFFFFF", "stroke": "#4A5568", "color": "#0F1620", "strokeWidth": 1 },
+            "transform": { "fill": "#F4ECDB", "stroke": "#4A5568", "color": "#0F1620", "strokeWidth": 1 },
+            "bridge":    { "fill": "transparent", "stroke": "#4A5568", "color": "#4A5568", "strokeWidth": 1, "strokeDasharray": "4 3" }
+          },
+          "dark": {
+            "ingress":   { "fill": "#1A2330", "stroke": "#E84855", "color": "#F8F1E7", "strokeWidth": 2 },
+            "core":      { "fill": "#1A2330", "stroke": "#B0BAC9", "color": "#F8F1E7", "strokeWidth": 1 },
+            "transform": { "fill": "#1F2832", "stroke": "#B0BAC9", "color": "#F8F1E7", "strokeWidth": 1 },
+            "bridge":    { "fill": "transparent", "stroke": "#B0BAC9", "color": "#B0BAC9", "strokeWidth": 1, "strokeDasharray": "4 3" }
+          }
+        },
+        "fontFamily": "Sora, sans-serif",
+        "lineColor": { "light": "#4A5568", "dark": "#B0BAC9" }
+      }
+    },
+    "phosphor": {
+      "displayName": "PHOSPHOR",
+      "audience": "developer / technical reference / 'stripped down but cool'",
+      "tagline": "1981 IBM 3270 amber CRT printed onto warm paper. Restrained, not 'I just installed neovim'.",
+      "fonts": {
+        "display": { "family": "IBM Plex Mono", "weight": 700, "italic": false },
+        "body":    { "family": "IBM Plex Mono", "weight": 300, "italic": false },
+        "code":    { "family": "IBM Plex Mono", "weight": 500 },
+        "italic":  { "family": "IBM Plex Mono", "weight": 300, "italic": true, "_note": "Callouts read as code comments." }
+      },
+      "details": [
+        "Shell prompt prefix on h2 headings: '> section-name' (lowercased), accent color for the >",
+        "Bracketed eyebrow tags: '[ section 2.4 ]'",
+        "Comment-prefix callouts: '// note here'",
+        "TOC page numbers prefixed 'p.' in dim sepia",
+        "Code blocks have 1px sepia border + 3px left rule in accent (alert orange)",
+        "Tables use dashed/dotted rules instead of solid",
+        "Lowercase h2 (terminal-style)",
+        "Mermaid: line-art (no fills), amber strokes; secondary-color (cool teal) for differentiation"
+      ],
+      "modes": {
+        "light": {
+          "bg":           "#F1E8D6",
+          "paper":        "#FFFFFF",
+          "ink":          "#2C2010",
+          "inkSoft":      "#6E5530",
+          "inkEmphasis":  "#5C3A00",
+          "inkBright":    "#8C5A00",
+          "accent":       "#B23A00",
+          "accentCool":   "#4A7B73",
+          "accentSoft":   "#C4B59B",
+          "rule":         "#C4B59B",
+          "codeBg":       "#E5DBC0",
+          "codeText":     "#5C3A00"
+        },
+        "dark": {
+          "bg":           "#000000",
+          "paper":        "#0F0E12",
+          "ink":          "#EDE2C9",
+          "inkSoft":      "#8A7350",
+          "inkEmphasis":  "#FFB000",
+          "inkBright":    "#FFD060",
+          "accent":       "#FF6E00",
+          "accentCool":   "#6FB8B0",
+          "accentSoft":   "#2A1E00",
+          "rule":         "#2A2310",
+          "codeBg":       "#16100A",
+          "codeText":     "#FFD060"
+        }
+      },
+      "mermaid": {
+        "_note": "Phosphor is line-art: every fill is transparent. Per-node distinction is purely via stroke color and weight.",
+        "tagStyling": {
+          "light": {
+            "ingress":   { "fill": "transparent", "stroke": "#8C5A00", "color": "#5C3A00", "strokeWidth": 2 },
+            "core":      { "fill": "transparent", "stroke": "#5C3A00", "color": "#5C3A00", "strokeWidth": 2 },
+            "transform": { "fill": "transparent", "stroke": "#6E5530", "color": "#2C2010", "strokeWidth": 1 },
+            "bridge":    { "fill": "transparent", "stroke": "#4A7B73", "color": "#4A7B73", "strokeWidth": 1 }
+          },
+          "dark": {
+            "ingress":   { "fill": "transparent", "stroke": "#FFD060", "color": "#FFD060", "strokeWidth": 2 },
+            "core":      { "fill": "transparent", "stroke": "#FFB000", "color": "#FFB000", "strokeWidth": 2 },
+            "transform": { "fill": "transparent", "stroke": "#8A7350", "color": "#EDE2C9", "strokeWidth": 1 },
+            "bridge":    { "fill": "transparent", "stroke": "#6FB8B0", "color": "#6FB8B0", "strokeWidth": 1 }
+          }
+        },
+        "fontFamily": "IBM Plex Mono, monospace",
+        "lineColor": { "light": "#6E5530", "dark": "#8A7350" }
+      }
+    },
+    "arcade": {
+      "displayName": "ARCADE",
+      "audience": "gamer / manual / walkthrough / fun-focused",
+      "tagline": "Star Fox 64 manual / Nintendo Power feature, but legible. Bold blocky display, vibrant accents, never childish.",
+      "fonts": {
+        "display":   { "family": "Audiowide", "weight": 400, "_note": "Chapter titles, h2 — single weight font." },
+        "display2":  { "family": "Bungee", "weight": 400, "_note": "Eyebrows, callout markers (★), table column headers." },
+        "body":      { "family": "Recursive", "weight": 400, "_note": "variation: CASL=0.5, MONO=0 — readable Casual sans" },
+        "code":      { "family": "Recursive", "weight": 500, "_note": "variation: CASL=0, MONO=1 — same family, mono axis" }
+      },
+      "details": [
+        "h2 has a hard 2px offset shadow in accent2 (light) or a soft glow in accent1 (dark)",
+        "Eyebrow tags use Bungee in accent2 with 0.06em letter-spacing",
+        "Horizontal rule is a gradient (accent1 -> accent2), 4px high, 96px wide",
+        "Code blocks have 2px solid accent3 border, 4px radius; in dark mode add 0 0 24px accent3 inner glow",
+        "Callouts have 6px left border in accent2, 2px other borders, prefixed with '★ ' in Bungee",
+        "Table headers: solid accent1 bg, Bungee uppercase, 0.05em letter-spacing, dark text",
+        "Mermaid uses node-shape variation: ([rounded]) for ingress, [rect] for core, {{hex}} for emphasis nodes — shape carries role as much as color",
+        "Chapter prefixes 'LEVEL NN' instead of 'Chapter NN'"
+      ],
+      "modes": {
+        "light": {
+          "bg":         "#FAF6E8",
+          "paper":      "#FFFFFF",
+          "ink":        "#1A1A2E",
+          "inkSoft":    "#4A4A6B",
+          "accent1":    "#00A862",
+          "accent2":    "#D11876",
+          "accent3":    "#007FAA",
+          "rule":       "#E5E0CC",
+          "codeBg":     "#F2EAD0",
+          "codeText":   "#1A1A2E"
+        },
+        "dark": {
+          "bg":         "#0A0F1A",
+          "paper":      "#14182A",
+          "ink":        "#FFFFFF",
+          "inkSoft":    "#B0B7CC",
+          "accent1":    "#00FF95",
+          "accent2":    "#FF2B8E",
+          "accent3":    "#00DEFF",
+          "rule":       "#1F2540",
+          "codeBg":     "#0F1322",
+          "codeText":   "#FFFFFF"
+        }
+      },
+      "mermaid": {
+        "_note": "Arcade leans on thick neon borders + saturated accents. All fills are paper (light) or surface (dark) so the borders read.",
+        "tagStyling": {
+          "light": {
+            "ingress":   { "fill": "#FFFFFF", "stroke": "#00A862", "color": "#1A1A2E", "strokeWidth": 3 },
+            "core":      { "fill": "#FFFFFF", "stroke": "#D11876", "color": "#1A1A2E", "strokeWidth": 3 },
+            "transform": { "fill": "#FFFFFF", "stroke": "#007FAA", "color": "#1A1A2E", "strokeWidth": 3 },
+            "bridge":    { "fill": "transparent", "stroke": "#4A4A6B", "color": "#4A4A6B", "strokeWidth": 1 }
+          },
+          "dark": {
+            "ingress":   { "fill": "#14182A", "stroke": "#00FF95", "color": "#FFFFFF", "strokeWidth": 3 },
+            "core":      { "fill": "#14182A", "stroke": "#FF2B8E", "color": "#FFFFFF", "strokeWidth": 3 },
+            "transform": { "fill": "#14182A", "stroke": "#00DEFF", "color": "#FFFFFF", "strokeWidth": 3 },
+            "bridge":    { "fill": "transparent", "stroke": "#B0B7CC", "color": "#B0B7CC", "strokeWidth": 1 }
+          }
+        },
+        "fontFamily": "Recursive, sans-serif",
+        "lineColor": { "light": "#4A4A6B", "dark": "#B0B7CC" }
+      }
+    }
+  },
+  "page": {
+    "size": "Letter",
+    "margins": { "top": "1in", "right": "1in", "bottom": "1in", "left": "1in" },
+    "_note": "Page geometry is theme-invariant; bake-off constraint #4 is enforced everywhere."
+  },
+  "buildOutputs": {
+    "naming": "out/transformers-{theme}-{mode}.pdf",
+    "examples": [
+      "out/transformers-atlas-light.pdf",
+      "out/transformers-atlas-dark.pdf",
+      "out/transformers-phosphor-light.pdf",
+      "out/transformers-phosphor-dark.pdf",
+      "out/transformers-arcade-light.pdf",
+      "out/transformers-arcade-dark.pdf"
+    ],
+    "defaultFallback": "out/transformers.pdf",
+    "_note": "When --theme is not specified, build emits the existing un-themed out/transformers.pdf for backwards-compat."
+  }
+}

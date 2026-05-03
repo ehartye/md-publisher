@@ -1,0 +1,5 @@
+# Pinned Python deps for the md-publisher runtime.
+# Installed by runtime/bootstrap.py into ~/.md-publisher/runtime/.venv/.
+weasyprint==66.0
+markdown==3.7
+Pygments==2.19.1

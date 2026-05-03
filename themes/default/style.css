@@ -1,0 +1,417 @@
+/* ============================================================================
+ * print.css — themable layout for the WeasyPrint approach.
+ *
+ * This file is the single place to swap fonts, colors, page geometry, and
+ * mermaid-figure layout. Code-block colors live in pygments.css; mermaid
+ * palette lives in theme/mermaid-config.json (consumed by mmdc at build time).
+ * ============================================================================ */
+
+/* ---------- Theme variables (tweak these to re-skin the document) ---------- */
+:root {
+    --font-body: "Source Serif Pro", "Source Serif", Charter, "Bitstream Charter",
+                 Georgia, "Times New Roman", serif;
+    --font-heading: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --font-mono: "JetBrains Mono", "Fira Code", "SF Mono", Consolas,
+                 "Liberation Mono", monospace;
+
+    --color-text: #1a1a1a;
+    --color-muted: #555;
+    --color-accent: #0b5394;       /* links, h1 underline */
+    --color-accent-soft: #e7eef7;  /* table header background */
+    --color-rule: #d0d0d0;
+    --color-code-bg: #f6f8fa;
+    --color-code-border: #e1e4e8;
+    --color-inline-code-bg: #f0f1f3;
+
+    --size-body: 11pt;
+    --leading-body: 1.45;
+
+    --page-margin: 1in;
+    --page-margin-top: 1in;
+    --page-margin-bottom: 1in;
+}
+
+/* ---------- Page geometry (US Letter, 1 inch margins all sides) ---------- */
+@page {
+    size: letter;
+    margin: var(--page-margin-top) var(--page-margin) var(--page-margin-bottom) var(--page-margin);
+
+    @bottom-center {
+        content: counter(page);
+        font-family: var(--font-heading);
+        font-size: 9pt;
+        color: var(--color-muted);
+    }
+    @top-right {
+        content: string(doc-title);
+        font-family: var(--font-heading);
+        font-size: 9pt;
+        color: var(--color-muted);
+    }
+}
+
+/* The TOC page: same geometry, suppress top-right title chrome */
+@page :first {
+    @top-right { content: ""; }
+    @bottom-center { content: ""; }
+}
+
+/* ---------- Document basics ---------- */
+html {
+    font-family: var(--font-body);
+    font-size: var(--size-body);
+    line-height: var(--leading-body);
+    color: var(--color-text);
+    /* Default widow/orphan policy: never strand <3 lines of a paragraph */
+    widows: 3;
+    orphans: 3;
+}
+
+body { margin: 0; padding: 0; }
+
+/* The doc title is captured into a string so the running header can show it */
+h1.doc-title { string-set: doc-title content(); }
+
+/* ---------- Headings ---------- */
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    color: var(--color-text);
+    line-height: 1.2;
+    /* keep heading with first line(s) of its content */
+    break-after: avoid-page;
+    page-break-after: avoid;
+}
+
+h1 {
+    font-size: 22pt;
+    font-weight: 700;
+    margin: 0 0 0.6em 0;
+    padding-bottom: 0.25em;
+    border-bottom: 2px solid var(--color-accent);
+    bookmark-level: 1;
+    /* h1 starts a new top-level section. Force a fresh page so each chapter
+       starts at the top — required by the "no half-empty pages mid-section"
+       rule (the rule exempts end-of-section, so this is fine). */
+    break-before: page;
+    page-break-before: always;
+}
+
+/* The very first h1 (doc title) should NOT force a page break — it sits
+   at the top of the TOC page anyway. */
+h1.doc-title {
+    break-before: auto;
+    page-break-before: auto;
+    margin-top: 0;
+}
+
+h2 {
+    font-size: 16pt;
+    font-weight: 600;
+    margin: 1.4em 0 0.5em 0;
+    color: var(--color-accent);
+    bookmark-level: 2;
+    /* No forced page break on h2 — let content flow. The ½-page rule
+       allows whitespace at h2 section boundaries; forcing a break here
+       would create the very gaps we are trying to avoid mid-section. */
+}
+
+h3 {
+    font-size: 13pt;
+    font-weight: 600;
+    margin: 1.1em 0 0.4em 0;
+    bookmark-level: 3;
+}
+
+h4, h5, h6 {
+    font-size: 11.5pt;
+    font-weight: 600;
+    margin: 1em 0 0.3em 0;
+    bookmark-level: 4;
+}
+
+/* ---------- Paragraphs and inline text ---------- */
+p {
+    margin: 0 0 0.6em 0;
+    text-align: justify;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+}
+
+a {
+    color: var(--color-accent);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(11, 83, 148, 0.3);
+}
+
+strong { font-weight: 600; }
+em { font-style: italic; }
+
+/* Inline code (single backticks) */
+code {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    background: var(--color-inline-code-bg);
+    border: 1px solid var(--color-code-border);
+    border-radius: 3px;
+    padding: 0.05em 0.3em;
+    /* prevent inline code from forcing line height jumps */
+    line-height: 1;
+}
+
+/* Code inside <pre> blocks: reset the inline styling */
+pre code {
+    background: transparent;
+    border: none;
+    padding: 0;
+    font-size: inherit;
+    line-height: inherit;
+    border-radius: 0;
+}
+
+/* ---------- Code blocks ---------- */
+pre {
+    font-family: var(--font-mono);
+    font-size: 9pt;
+    line-height: 1.4;
+    background: var(--color-code-bg);
+    border: 1px solid var(--color-code-border);
+    border-radius: 4px;
+    padding: 0.7em 0.9em;
+    margin: 0.8em 0;
+    overflow: hidden;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    /* keep code blocks intact across pages where possible */
+    break-inside: avoid;
+    page-break-inside: avoid;
+}
+
+/* Codehilite wraps <pre> in <div class="codehilite"> */
+.codehilite {
+    margin: 0.8em 0;
+    break-inside: avoid;
+    page-break-inside: avoid;
+}
+.codehilite pre {
+    margin: 0;
+}
+
+/* ---------- Tables ---------- */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.9em 0;
+    font-size: 10pt;
+    /* try to keep tables intact; if they must split, headers repeat */
+    break-inside: avoid;
+    page-break-inside: avoid;
+}
+
+thead {
+    /* ensure the header row repeats if a table does end up split */
+    display: table-header-group;
+}
+
+th, td {
+    padding: 0.45em 0.7em;
+    border: 1px solid var(--color-rule);
+    text-align: left;
+    vertical-align: top;
+}
+
+th {
+    background: var(--color-accent-soft);
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 9.5pt;
+}
+
+/* Numeric columns right-align (markdown emits style="text-align: right") */
+th[style*="right"], td[style*="right"] { text-align: right; }
+th[style*="center"], td[style*="center"] { text-align: center; }
+
+/* ---------- Mermaid figures ----------
+ *
+ * The two load-bearing rules here are:
+ *  1) max-width / max-height on the SVG to clamp the oversized diagram
+ *     into the printable area without clipping or rasterizing.
+ *  2) break-inside: avoid so a figure never splits across a page boundary.
+ *
+ * The mermaid_processor strips the explicit width/height attributes mmdc
+ * emits on the root <svg>, leaving only the viewBox. That is what makes
+ * the CSS max-* rules actually take effect. Without that, mmdc's pixel
+ * dimensions win and the figure overflows.
+ */
+figure.mermaid {
+    margin: 1em auto;
+    text-align: center;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    break-before: avoid;
+    page-break-before: avoid;
+}
+
+figure.mermaid svg {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+    /* 6 inches: large enough that medium flowcharts (~12 nodes, TD layout)
+       render at their natural ~5in size with readable labels, but capped
+       so a pathologically tall diagram still fits. The real fix for
+       diagrams getting pushed onto their own page is break-before: avoid
+       on figure.mermaid above; this cap is just an upper safety bound.
+       Oversized diagrams override below to use the full printable region. */
+    max-height: 6in;
+    width: auto;
+    height: auto;
+}
+
+figure.mermaid figcaption {
+    font-family: var(--font-heading);
+    font-size: 9pt;
+    color: var(--color-muted);
+    margin-top: 0.4em;
+}
+
+/* The oversized multi-head figure gets its own page. The mermaid processor
+   has already rewritten the flowchart direction from TD to LR for oversized
+   diagrams (see src/mermaid_processor.py::_maybe_rewrite_direction); that
+   converts a very-wide-and-short layout into a tall-and-narrow one that
+   fits portrait Letter naturally. Detection happens in the processor: any
+   mermaid figure with >= 25 nodes gets the .oversized class. */
+figure.mermaid.oversized {
+    /* The oversized figure gets its own page. We tried CSS-GCPM
+       `float: top` first to let prose backfill the preceding page, but
+       WeasyPrint 66 silently ignores it. Forcing a page break here is
+       the alternative that keeps the figure intact and full-page-tall.
+       The known cost is some whitespace on the preceding page when the
+       figure follows mid-section prose — documented in README under
+       "known issues" as the inherent tradeoff between rubric items
+       "fits on one page" and the ½-page whitespace rule. */
+    break-before: page;
+    break-after: page;
+    page-break-before: always;
+    page-break-after: always;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    margin: 0;
+}
+
+figure.mermaid.oversized svg {
+    /* Use the full printable region of a portrait Letter page. The LR
+       layout makes height the binding axis; width comes along for the
+       ride at whatever aspect ratio mermaid produced. */
+    max-width: 6.5in;
+    max-height: 9in;
+    width: auto;
+    height: auto;
+}
+
+/* ---------- Lists ---------- */
+ul, ol {
+    margin: 0.4em 0 0.8em 1.4em;
+    padding: 0;
+}
+li { margin: 0.2em 0; }
+
+/* ---------- Blockquotes ---------- */
+blockquote {
+    margin: 0.8em 0;
+    padding: 0.4em 1em;
+    border-left: 3px solid var(--color-accent);
+    color: var(--color-muted);
+    font-style: italic;
+    break-inside: avoid;
+    page-break-inside: avoid;
+}
+
+/* ---------- Horizontal rule ---------- */
+hr {
+    border: none;
+    border-top: 1px solid var(--color-rule);
+    margin: 1.2em 0;
+}
+
+/* ============================================================================
+ * Table of Contents
+ *
+ * The <nav id="toc"> block is generated by build.py from the parsed h1/h2
+ * headings. Page numbers are filled in by WeasyPrint at paged-render time
+ * via target-counter() — pure CSS, no JS, no second pass.
+ * ============================================================================ */
+
+nav#toc {
+    /* Force the TOC onto its own page, before the body content */
+    break-after: page;
+    page-break-after: always;
+    /* Reset the bookmark-level inheritance: we don't want TOC entries to
+       appear in the PDF outline themselves (the headings they link to
+       already do). */
+}
+
+nav#toc h2.toc-title {
+    font-family: var(--font-heading);
+    font-size: 18pt;
+    font-weight: 600;
+    color: var(--color-text);
+    margin: 0 0 1em 0;
+    padding-bottom: 0.3em;
+    border-bottom: 1px solid var(--color-rule);
+    /* Suppress page-break and heading colors used in the body */
+    break-before: auto;
+    page-break-before: auto;
+    bookmark-level: none;
+}
+
+nav#toc ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    counter-reset: toc-counter;
+}
+
+nav#toc ol ol {
+    margin-left: 1.2em;
+}
+
+nav#toc li {
+    margin: 0.35em 0;
+}
+
+nav#toc a {
+    /* TOC entries: full-width line with leader dots and a page number on
+       the right. WeasyPrint resolves target-counter at paged-render time. */
+    display: block;
+    color: var(--color-text);
+    border-bottom: none;
+    font-family: var(--font-heading);
+    text-decoration: none;
+}
+
+nav#toc li.toc-h1 > a {
+    font-size: 12pt;
+    font-weight: 600;
+    margin-top: 0.6em;
+}
+
+nav#toc li.toc-h2 > a {
+    font-size: 10.5pt;
+    font-weight: 400;
+    color: var(--color-muted);
+    padding-left: 0.6em;
+}
+
+nav#toc a::after {
+    /* Leader dots + the page number of the heading the link points to.
+       attr(href) returns "#some-id"; target-counter resolves it to the
+       page-number counter at that target. */
+    content: leader('. ') target-counter(attr(href), page);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ============================================================================
+ * First-page (TOC) suppression of running header.
+ *
+ * The TOC page uses :first selectors above to suppress the header band
+ * and footer page number, keeping the TOC visually clean.
+ * ============================================================================ */
