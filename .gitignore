@@ -1,0 +1,22 @@
+# Bootstrap targets (live in ~/.md-publisher/runtime/, not in repo, but
+# in case anyone runs bootstrap inside the repo for testing)
+runtime/.venv/
+runtime/node_modules/
+runtime/package-lock.json
+
+# Per-document publish/preprocess outputs (only relevant if you publish a
+# corpus checked into this repo)
+.md-publisher/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Editors / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
