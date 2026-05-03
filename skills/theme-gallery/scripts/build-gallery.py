@@ -207,14 +207,19 @@ def main() -> int:
     n_user = sum(1 for t in themes if t["source"] == "user")
     n_builtin = sum(1 for t in themes if t["source"] == "builtin")
 
-    html_doc = GALLERY_HTML.format(
-        n_total=len(themes),
-        n_user=n_user,
-        n_builtin=n_builtin,
-        user_themes_dir=html_escape(payload["user_themes_dir"]),
-        plugin_themes_dir=html_escape(payload["plugin_themes_dir"]),
-        sections=render_sections(themes),
-    )
+    # Use simple .replace() rather than str.format() because the template
+    # contains literal `{` from CSS rules (`:root { --foo: ... }`).
+    substitutions = {
+        "{n_total}":           str(len(themes)),
+        "{n_user}":            str(n_user),
+        "{n_builtin}":         str(n_builtin),
+        "{user_themes_dir}":   html_escape(payload["user_themes_dir"]),
+        "{plugin_themes_dir}": html_escape(payload["plugin_themes_dir"]),
+        "{sections}":          render_sections(themes),
+    }
+    html_doc = GALLERY_HTML
+    for placeholder, value in substitutions.items():
+        html_doc = html_doc.replace(placeholder, value)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(html_doc, encoding="utf-8")
     print(f"[gallery] wrote: {args.output} ({len(themes)} themes)")
