@@ -64,12 +64,18 @@ def mmdc_entry() -> Path:
 
 
 def puppeteer_config() -> Path:
-    """Path to the bundled puppeteer.json (sandbox flags for mmdc).
+    """Path to the puppeteer config mmdc consumes.
 
-    Lives in the plugin's runtime/ directory; copied to the user's runtime
-    dir at bootstrap time isn't strictly necessary — mmdc reads it via an
-    explicit --puppeteerConfigFile arg, so we point at the plugin copy.
+    Default: `runtime/puppeteer.json` with empty args (Chromium sandbox enabled).
+
+    Override: set MD_PUBLISHER_DISABLE_SANDBOX=1 to use the no-sandbox variant
+    (`runtime/puppeteer-no-sandbox.json`). Required in CI / containers / WSL
+    where the user-namespace prerequisites for Chromium's sandbox are absent.
+    NEVER set this env var on a multi-user system — disabling the sandbox
+    drops a primary defense layer if a malicious mermaid block is processed.
     """
+    if os.environ.get("MD_PUBLISHER_DISABLE_SANDBOX") == "1":
+        return plugin_root() / "runtime" / "puppeteer-no-sandbox.json"
     return plugin_root() / "runtime" / "puppeteer.json"
 
 

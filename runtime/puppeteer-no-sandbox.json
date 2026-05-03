@@ -1,0 +1,4 @@
+{
+  "_comment": "Sandbox-disabled variant. Picked when MD_PUBLISHER_DISABLE_SANDBOX=1. Useful for CI / containers / WSL where the user-namespace prerequisites for Chromium's sandbox are absent. NEVER use this on a normal multi-user system.",
+  "args": ["--no-sandbox", "--disable-setuid-sandbox"]
+}

@@ -1,0 +1,38 @@
+/* arcade cover-page styling: bold Audiowide title with hard offset shadow in
+   magenta, neon gradient rule, Bungee uppercase subtitle in cyan,
+   body-font meta, neon attribution in green. */
+header.cover .cover-title {
+    font-family: var(--font-display);
+    font-size: 42pt;
+    font-weight: 400;
+    color: var(--ink);
+    text-shadow: 4px 4px 0 var(--accent2);
+    letter-spacing: 0.02em;
+    line-height: 1.0;
+}
+header.cover .cover-rule {
+    width: 2in;
+    height: 6px;
+    background: linear-gradient(90deg, var(--accent1), var(--accent2));
+    border-radius: 3px;
+}
+header.cover .cover-subtitle {
+    font-family: var(--font-display2);
+    font-size: 13pt;
+    color: var(--accent3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+header.cover .cover-meta {
+    font-family: var(--font-body);
+    font-size: 11pt;
+    color: var(--ink);
+}
+header.cover .cover-attribution {
+    font-family: var(--font-display2);
+    font-size: 9pt;
+    color: var(--accent1);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+@page cover { background: var(--bg); }

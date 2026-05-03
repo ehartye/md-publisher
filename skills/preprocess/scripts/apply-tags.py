@@ -149,14 +149,9 @@ def main() -> int:
 
     original_text = source.read_text(encoding="utf-8")
 
-    # Back up the original BEFORE any rewrite
-    if not args.no_backup:
-        ts = output_paths.timestamp()
-        backup = output_paths.derive_backup_path(source, ts=ts)
-        output_paths.ensure_parent(backup)
-        backup.write_text(original_text, encoding="utf-8")
-        print(f"[apply-tags] backed up original to: {backup}")
-
+    # Compute the rewritten text first; if nothing actually changes, exit
+    # without taking a backup. This keeps idempotent re-runs from piling
+    # up empty timestamped backup directories.
     new_text = apply_tags_to_text(original_text, decisions_by_index)
 
     # Optional front matter prepend (only if not already present)
@@ -165,8 +160,16 @@ def main() -> int:
         new_text = render_frontmatter(fm) + new_text
 
     if new_text == original_text:
-        print("[apply-tags] no changes (decisions already applied)")
+        print("[apply-tags] no changes (decisions already applied); no backup written")
         return 0
+
+    # Now that we know there's a real change to write, take the backup first
+    if not args.no_backup:
+        ts = output_paths.timestamp()
+        backup = output_paths.derive_backup_path(source, ts=ts)
+        output_paths.ensure_parent(backup)
+        backup.write_text(original_text, encoding="utf-8")
+        print(f"[apply-tags] backed up original to: {backup}")
 
     source.write_text(new_text, encoding="utf-8")
     n_tags = sum(len(v) for v in decisions_by_index.values())

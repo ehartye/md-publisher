@@ -127,15 +127,11 @@ def build_cover_html(
     return "\n".join(parts)
 
 
-def cover_css(theme_selection: ThemeSelection) -> str:
-    """Theme-aware CSS for the cover page. Generated per build so each theme
-    can express its identity (italic serif title for ATLAS, shell-prompt
-    `> title` for PHOSPHOR, neon-shadow display for ARCADE) without
-    duplicating the cover styling across all 7 CSS files.
-    """
-    base = """
+_COVER_BASE_CSS = """
 /* Cover page — first page of the document, before the TOC. Named so we can
-   suppress running header/footer chrome via @page cover. */
+   suppress running header/footer chrome via @page cover. Per-theme styling
+   (typography, color, decorative flourishes) lives in each theme dir's
+   cover.css; the base block here only defines the universal layout. */
 header.cover {
     page: cover;
     break-after: page;
@@ -177,158 +173,21 @@ header.cover .cover-attribution {
     @bottom-right { content: ""; }
 }
 """
-    if theme_selection.name == "default":
-        # Default theme: clean accent-colored sans title, italic muted subtitle
-        per_theme = """
-header.cover .cover-title {
-    font-family: var(--font-heading);
-    font-size: 36pt;
-    font-weight: 700;
-    color: var(--color-accent);
-}
-header.cover .cover-rule {
-    width: 1.4in;
-    height: 2px;
-    background: var(--color-accent);
-}
-header.cover .cover-subtitle {
-    font-family: var(--font-body);
-    font-size: 16pt;
-    font-style: italic;
-    color: var(--color-muted);
-}
-header.cover .cover-meta {
-    font-family: var(--font-heading);
-    font-size: 11pt;
-    color: var(--color-text);
-}
-header.cover .cover-attribution {
-    font-family: var(--font-heading);
-    font-size: 9pt;
-    color: var(--color-muted);
-}
-"""
-    elif theme_selection.name == "atlas":
-        # Editorial trust: italic Newsreader display, red rule, sans-uppercase meta
-        per_theme = """
-header.cover .cover-title {
-    font-family: var(--font-display);
-    font-size: 44pt;
-    font-weight: 800;
-    font-style: italic;
-    color: var(--ink);
-    letter-spacing: -0.02em;
-}
-header.cover .cover-rule {
-    width: 1.2in;
-    height: 2px;
-    background: var(--accent);
-}
-header.cover .cover-subtitle {
-    font-family: var(--font-display);
-    font-size: 16pt;
-    font-style: italic;
-    color: var(--ink-soft);
-}
-header.cover .cover-meta {
-    font-family: var(--font-sans);
-    font-size: 10pt;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--ink-soft);
-}
-header.cover .cover-attribution {
-    font-family: var(--font-sans);
-    font-size: 8.5pt;
-    color: var(--ink-soft);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-}
-@page cover { background: var(--bg); }
-"""
-    elif theme_selection.name == "phosphor":
-        # CRT amber: > prefix, lowercase, all mono, // subtitle, [ bracketed ] meta
-        per_theme = """
-header.cover .cover-title {
-    font-family: var(--font-mono);
-    font-size: 30pt;
-    font-weight: 700;
-    color: var(--ink-emphasis);
-    text-transform: lowercase;
-}
-header.cover .cover-title::before {
-    content: "> ";
-    color: var(--accent);
-}
-header.cover .cover-rule {
-    width: 1.4in;
-    height: 1px;
-    background: var(--ink-soft);
-}
-header.cover .cover-subtitle {
-    font-family: var(--font-mono);
-    font-size: 13pt;
-    font-style: italic;
-    color: var(--ink-soft);
-}
-header.cover .cover-subtitle::before { content: "// "; color: var(--accent); }
-header.cover .cover-meta {
-    font-family: var(--font-mono);
-    font-size: 10pt;
-    color: var(--ink);
-}
-header.cover .cover-meta span::before { content: "[ "; color: var(--ink-soft); }
-header.cover .cover-meta span::after  { content: " ]"; color: var(--ink-soft); }
-header.cover .cover-attribution {
-    font-family: var(--font-mono);
-    font-size: 9pt;
-    color: var(--ink-soft);
-}
-@page cover { background: var(--bg); }
-"""
-    elif theme_selection.name == "arcade":
-        # Game manual: bold display title with hard offset shadow, gradient rule,
-        # Bungee subtitle in cyan, body-font meta, neon attribution
-        per_theme = """
-header.cover .cover-title {
-    font-family: var(--font-display);
-    font-size: 42pt;
-    font-weight: 400;
-    color: var(--ink);
-    text-shadow: 4px 4px 0 var(--accent2);
-    letter-spacing: 0.02em;
-    line-height: 1.0;
-}
-header.cover .cover-rule {
-    width: 2in;
-    height: 6px;
-    background: linear-gradient(90deg, var(--accent1), var(--accent2));
-    border-radius: 3px;
-}
-header.cover .cover-subtitle {
-    font-family: var(--font-display2);
-    font-size: 13pt;
-    color: var(--accent3);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-}
-header.cover .cover-meta {
-    font-family: var(--font-body);
-    font-size: 11pt;
-    color: var(--ink);
-}
-header.cover .cover-attribution {
-    font-family: var(--font-display2);
-    font-size: 9pt;
-    color: var(--accent1);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-@page cover { background: var(--bg); }
-"""
-    else:
-        per_theme = ""
-    return base + per_theme
+
+
+def cover_css(theme_selection: ThemeSelection) -> str:
+    """Assemble cover-page CSS for a build.
+
+    Returns the universal base layout plus the theme's `cover.css` if one
+    exists in the theme directory. User themes (including those generated
+    by theme-advisor) can ship their own `cover.css` and it will load
+    automatically. Themes without a cover.css get the base layout only —
+    typography and color cascade in via the theme's main style.css.
+    """
+    theme_dir = theme_selection.css_path.parent
+    per_theme_path = theme_dir / "cover.css"
+    per_theme = per_theme_path.read_text(encoding="utf-8") if per_theme_path.exists() else ""
+    return _COVER_BASE_CSS + per_theme
 
 
 def build_pdf(

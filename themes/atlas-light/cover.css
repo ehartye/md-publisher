@@ -1,0 +1,36 @@
+/* atlas cover-page styling: editorial-trust serif on warm bone, red rule,
+   uppercase letterspaced sans accent. */
+header.cover .cover-title {
+    font-family: var(--font-display);
+    font-size: 44pt;
+    font-weight: 800;
+    font-style: italic;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+}
+header.cover .cover-rule {
+    width: 1.2in;
+    height: 2px;
+    background: var(--accent);
+}
+header.cover .cover-subtitle {
+    font-family: var(--font-display);
+    font-size: 16pt;
+    font-style: italic;
+    color: var(--ink-soft);
+}
+header.cover .cover-meta {
+    font-family: var(--font-sans);
+    font-size: 10pt;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-soft);
+}
+header.cover .cover-attribution {
+    font-family: var(--font-sans);
+    font-size: 8.5pt;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+@page cover { background: var(--bg); }

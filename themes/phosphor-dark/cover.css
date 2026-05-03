@@ -1,0 +1,38 @@
+/* phosphor cover-page styling: amber CRT — > prefix on lowercased mono title,
+   // prefix on subtitle, [ bracketed ] meta items. */
+header.cover .cover-title {
+    font-family: var(--font-mono);
+    font-size: 30pt;
+    font-weight: 700;
+    color: var(--ink-emphasis);
+    text-transform: lowercase;
+}
+header.cover .cover-title::before {
+    content: "> ";
+    color: var(--accent);
+}
+header.cover .cover-rule {
+    width: 1.4in;
+    height: 1px;
+    background: var(--ink-soft);
+}
+header.cover .cover-subtitle {
+    font-family: var(--font-mono);
+    font-size: 13pt;
+    font-style: italic;
+    color: var(--ink-soft);
+}
+header.cover .cover-subtitle::before { content: "// "; color: var(--accent); }
+header.cover .cover-meta {
+    font-family: var(--font-mono);
+    font-size: 10pt;
+    color: var(--ink);
+}
+header.cover .cover-meta span::before { content: "[ "; color: var(--ink-soft); }
+header.cover .cover-meta span::after  { content: " ]"; color: var(--ink-soft); }
+header.cover .cover-attribution {
+    font-family: var(--font-mono);
+    font-size: 9pt;
+    color: var(--ink-soft);
+}
+@page cover { background: var(--bg); }

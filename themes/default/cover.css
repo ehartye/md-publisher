@@ -1,0 +1,29 @@
+/* default theme cover-page styling. Read by lib.pipeline.cover_css() and
+   appended to the base cover layout. */
+header.cover .cover-title {
+    font-family: var(--font-heading);
+    font-size: 36pt;
+    font-weight: 700;
+    color: var(--color-accent);
+}
+header.cover .cover-rule {
+    width: 1.4in;
+    height: 2px;
+    background: var(--color-accent);
+}
+header.cover .cover-subtitle {
+    font-family: var(--font-body);
+    font-size: 16pt;
+    font-style: italic;
+    color: var(--color-muted);
+}
+header.cover .cover-meta {
+    font-family: var(--font-heading);
+    font-size: 11pt;
+    color: var(--color-text);
+}
+header.cover .cover-attribution {
+    font-family: var(--font-heading);
+    font-size: 9pt;
+    color: var(--color-muted);
+}

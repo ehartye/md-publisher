@@ -42,17 +42,20 @@ Ask **one question per turn**, prefer multiple-choice format when possible. Wait
 
 ### Step 2 — Build the spec
 
-From the answers, build a JSON spec that conforms to the scaffold script's schema (see `scripts/scaffold-theme.py` docstring). Required fields:
+From the answers, build a JSON spec that conforms to the scaffold script's schema (see `scripts/scaffold-theme.py` docstring).
 
-- `slug` (kebab-case, mode-suffixed if mode-aware: e.g. `solarized-light`)
-- `name` (the user-visible base name)
-- `mode` (`"light"` or `"dark"`, or omit for mode-less)
-- `displayName` (Title Case)
-- `tagline` (one-sentence aesthetic summary)
+**Hard-validated by the script** (build will fail without these):
+- `slug` (kebab-case, mode-suffixed if mode-aware: e.g. `solarized-light`). The slug IS the resolution key — the publish skill resolves `--theme NAME --mode MODE` by computing slug `NAME-MODE` and looking for that directory under `~/.md-publisher/themes/`.
 - `fonts` (display, body, sans, mono — full font stacks with system fallbacks)
 - `palette` (bg, paper, ink, inkSoft, accent, accentSoft, rule, codeBg, codeText)
 - `mermaid.tagStyling.{ingress,core,transform,bridge}` — the four classDef styles
-- `mermaid.fontFamily` and `mermaid.lineColor`
+
+**Soft-required** (script defaults if missing, but should be set for a polished theme):
+- `name` (the user-visible base name; persisted in spec.json for reference)
+- `mode` (`"light"` or `"dark"`, or omit for mode-less)
+- `displayName` (Title Case; appears in theme-gallery cards)
+- `tagline` (one-sentence aesthetic summary; preview.html caption)
+- `mermaid.fontFamily` and `mermaid.lineColor` (defaults derived from palette)
 
 For palette derivation, follow these defaults if the user didn't specify:
 - `paper` defaults to `bg`; for cards/figures, `paper` can be a slightly elevated tone
@@ -104,7 +107,7 @@ Repeat steps 2-4 for the dark variant. Slug becomes `<base>-dark` (vs `<base>-li
 - `ink` from dark → light bone/cream
 - `accent` may need a brighter cousin (red `#B22234` light → `#E84855` dark, etc.)
 
-The two specs share the same `name` so `--theme <name> --mode <light|dark>` resolves correctly.
+The two specs share the same base in their slugs (e.g., `solarized-light` and `solarized-dark`). The publish skill resolves `--theme solarized --mode light` to slug `solarized-light` (and similarly for dark) — so the slug naming convention IS the resolution mechanism. The `name` field in spec.json is metadata for the gallery and theme-advisor; it does not affect resolution.
 
 ### Step 6 — Confirm and report
 

@@ -14,6 +14,7 @@ Invocation patterns:
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import subprocess
 import sys
@@ -80,34 +81,30 @@ def run_one_build(
 ) -> Path:
     """Invoke the venv's Python to run a single build, return output path.
 
-    The actual build happens in the bootstrapped venv — this script runs
-    under the system Python (since the venv has WeasyPrint which the system
-    python may not), but the heavy work runs over there via a small inline
-    runner so the venv's deps are in scope.
+    The actual build runs inside the bootstrapped venv (it has WeasyPrint
+    + Pygments + markdown). We hand it a JSON job document on stdin via
+    `_runner.py` so no user-supplied string is ever interpolated into a
+    Python source string — the job dict is passed structurally end-to-end.
     """
-    runner_code = (
-        "import sys; sys.path.insert(0, r'" + str(PLUGIN_ROOT) + "');\n"
-        "from lib import theme_loader, output_paths, pipeline;\n"
-        "from pathlib import Path;\n"
-        f"sel = theme_loader.resolve_selection(name={theme!r}, mode={mode!r});\n"
-        f"src = Path(r{str(source)!r});\n"
-        f"explicit = " + (f"Path(r{str(explicit_output)!r})" if explicit_output else "None") + ";\n"
-        f"label = sel.slug if sel.name != 'default' else None;\n"
-        "out = output_paths.derive_output_pdf(src, explicit_output=explicit, theme_label=label);\n"
-        "output_paths.ensure_parent(out);\n"
-        f"pipeline.build_pdf(source=src, output=out, theme_selection=sel, include_cover={include_cover!r});\n"
-        "print('OUTPUT_PATH=' + str(out));\n"
-    )
+    runner_script = Path(__file__).resolve().parent / "_runner.py"
+    job = {
+        "plugin_root":     str(PLUGIN_ROOT),
+        "source":          str(source),
+        "theme":           theme,
+        "mode":            mode,
+        "explicit_output": str(explicit_output) if explicit_output else None,
+        "include_cover":   include_cover,
+    }
     py = venv_python()
     proc = subprocess.run(
-        [str(py), "-c", runner_code],
+        [str(py), str(runner_script)],
+        input=json.dumps(job),
         capture_output=True, text=True,
     )
     sys.stdout.write(proc.stdout)
     if proc.returncode != 0:
         sys.stderr.write(proc.stderr)
         raise SystemExit(f"build failed for theme={theme}, mode={mode}")
-    # Parse the OUTPUT_PATH line printed by the runner
     out_line = next(
         (l for l in proc.stdout.splitlines() if l.startswith("OUTPUT_PATH=")), None
     )

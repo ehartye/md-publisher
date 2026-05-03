@@ -45,6 +45,8 @@ Invoke `${CLAUDE_PLUGIN_ROOT}/skills/preprocess/scripts/scan-mermaid.py <doc.md>
   "blocks": [
     {
       "index": 0,
+      "line_start": 38,
+      "line_end": 46,
       "diagram_type": "flowchart",
       "supports_classdef": true,
       "tagged": false,
@@ -56,6 +58,8 @@ Invoke `${CLAUDE_PLUGIN_ROOT}/skills/preprocess/scripts/scan-mermaid.py <doc.md>
   ]
 }
 ```
+
+`line_start` and `line_end` are 1-based line numbers in the source — useful when you need to read prose around a diagram for context. `snippet` is the first 12 lines of the block (truncated for brevity in the scan output; the full source is at the line range above).
 
 ### Step 2 — Decide tags
 
@@ -90,10 +94,13 @@ ${CLAUDE_PLUGIN_ROOT}/skills/preprocess/scripts/apply-tags.py --decisions <temp.
 ```
 
 The apply script:
-1. Backs up the original file to `<source-dir>/.md-publisher/<YYYYMMDD-HHMMSS>/original.md`
-2. Rewrites the source in place — appends `:::<tag>` to the FIRST occurrence of each tagged node ID's definition
-3. Optionally prepends YAML front matter
-4. Reports the number of tags applied
+1. Computes the rewritten text first; if no actual change would land, exits without writing a backup or touching the source.
+2. Otherwise, backs up the original file to `<source-dir>/.md-publisher/<YYYYMMDD-HHMMSS>/original.md`.
+3. Rewrites the source in place — appends `:::<tag>` to the FIRST occurrence of each tagged node ID's definition.
+4. Optionally prepends YAML front matter.
+5. Reports the number of tags applied.
+
+**Do NOT pass `--no-backup`.** The flag exists in apply-tags.py as an escape hatch but using it removes the only safety net against an accidental destructive rewrite. The default backup behavior is the load-bearing safety property of this skill.
 
 ### Step 5 — Report
 

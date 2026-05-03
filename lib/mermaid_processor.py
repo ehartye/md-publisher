@@ -145,15 +145,22 @@ class MermaidPreprocessor(Preprocessor):
         return placeholder
 
     def _invoke_mmdc(self, mmd_path: Path, svg_path: Path) -> None:
-        """Run mmdc to convert .mmd -> .svg.
+        """Run mmdc to convert .mmd -> .svg via `node <mmdc-cli.js>`.
 
-        We pass --configFile (mermaid theme/layout knobs) and
-        --puppeteerConfigFile (Chromium sandbox flags — needed in some
-        constrained environments and harmless elsewhere). Output is
-        forced to SVG via the file extension; mmdc infers the format
-        from the -o suffix.
+        We invoke node directly against mmdc's source entry point rather
+        than going through the .cmd shim. This avoids:
+          - shell=True on Windows (which is fragile if any path has a
+            space — the shim args don't survive the shell parsing)
+          - the .cmd-vs-bash-script split between platforms
+          - puppeteer auto-detecting bundled Chromium incorrectly when
+            launched through a wrapper
+
+        --configFile passes mermaid theme/layout knobs; --puppeteerConfigFile
+        passes Chromium launch args (sandbox enabled by default; see
+        runtime.puppeteer_config()).
         """
         cmd = [
+            "node",
             str(self.mmdc_path),
             "-i", str(mmd_path),
             "-o", str(svg_path),
@@ -161,11 +168,7 @@ class MermaidPreprocessor(Preprocessor):
             "--configFile", str(self.mermaid_config),
             "--puppeteerConfigFile", str(self.puppeteer_config),
         ]
-        result = subprocess.run(
-            cmd, capture_output=True, text=True,
-            # On Windows mmdc is a .cmd shim; shell=True lets it resolve.
-            shell=(sys.platform == "win32"),
-        )
+        result = subprocess.run(cmd, capture_output=True, text=True)
         if result.returncode != 0:
             sys.stderr.write(
                 f"mmdc failed for {mmd_path.name}\n"
@@ -345,23 +348,19 @@ class MermaidExtension(Extension):
 
 
 def find_mmdc() -> Path:
-    """Locate the mmdc binary in the bootstrapped runtime, falling back to PATH.
+    """Locate mermaid-cli's main module (invoked as `node <path>`).
 
-    The plugin's bootstrap installs mermaid-cli to ~/.md-publisher/runtime/
-    node_modules/. We look there first, then any system-wide install.
+    Returns the path to mermaid-cli's `cli.js` so callers can invoke it
+    via `node <cli.js>` — robust across platforms (no .cmd shim parsing,
+    no shell=True needed). The plugin bootstrap installs mermaid-cli at
+    ~/.md-publisher/runtime/node_modules/@mermaid-js/mermaid-cli/.
     """
     from . import runtime
-    if sys.platform == "win32":
-        local = runtime.NODE_MODULES_DIR / ".bin" / "mmdc.cmd"
-    else:
-        local = runtime.NODE_MODULES_DIR / ".bin" / "mmdc"
-    if local.exists():
-        return local
-    found = shutil.which("mmdc")
-    if found:
-        return Path(found)
+    cli = runtime.mmdc_entry()
+    if cli.exists():
+        return cli
     raise FileNotFoundError(
-        f"mmdc not found at {local} or on PATH. "
+        f"mermaid-cli not found at {cli}. "
         "Run /md-publisher:publish on any markdown file to trigger first-run "
-        "bootstrap, or `node runtime/bootstrap.py` directly from the plugin."
+        "bootstrap, or `python runtime/bootstrap.py` directly from the plugin."
     )
