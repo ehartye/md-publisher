@@ -2,8 +2,14 @@
 """Build a single HTML gallery page showing every md-publisher theme.
 
 Combines built-in + user themes into one scrollable page. Each theme card
-shows its name, tagline, palette swatches, and an iframe pointing at the
-theme's preview.html (when present).
+shows: name, tagline, audience, palette color swatches with hex labels,
+typography sample painted in the theme's display/sans/mono fonts on the
+theme's bg+ink colors (gives an at-a-glance feel without needing to render
+a full document), and the publish command to render with that theme.
+
+Bundled themes include: atlas (Newsreader+Sora+JetBrains Mono),
+phosphor (IBM Plex Mono everywhere), arcade (Audiowide+Bungee+Recursive
++JetBrains Mono). All loaded from Google Fonts via the link in <head>.
 
 Output goes to ~/.md-publisher/gallery.html by default; pass --output to
 override. The skill typically opens this file in the user's browser.
@@ -35,7 +41,7 @@ GALLERY_HTML = """<!doctype html>
 <title>md-publisher · theme gallery</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,800;1,400&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@300;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,800;1,400&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@300;500&family=Sora:wght@400;500;600&family=IBM+Plex+Mono:ital,wght@0,300;0,500;0,700;1,300&family=Audiowide&family=Bungee&family=Recursive:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
     --chrome-bg: #FAF8F4;
@@ -84,9 +90,38 @@ GALLERY_HTML = """<!doctype html>
   .card-preview.no-preview { padding: 40px; color: var(--chrome-muted); font-size: 13px;
                               text-align: center; align-self: stretch; display: flex;
                               align-items: center; justify-content: center; min-height: 380px; }
+
+  /* Palette swatches + Typography sample (per-card, painted from theme data) */
+  .card-section-label { font-family: var(--chrome-mono); font-size: 9.5px;
+                        text-transform: uppercase; letter-spacing: 0.16em;
+                        color: var(--chrome-muted); margin: 18px 22px 8px 22px; }
+  .swatches { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;
+              padding: 0 22px; }
+  .swatch { position: relative; padding: 0; height: 52px; border-radius: 3px;
+            border: 1px solid rgba(0,0,0,0.08); display: flex; flex-direction: column;
+            justify-content: flex-end; overflow: hidden; }
+  .swatch .role { font-family: var(--chrome-mono); font-size: 9px; padding: 2px 5px;
+                  background: rgba(0,0,0,0.55); color: #fff; letter-spacing: 0.04em; }
+  .swatch .hex { font-family: var(--chrome-mono); font-size: 9px; padding: 2px 5px;
+                 background: rgba(255,255,255,0.85); color: #000; letter-spacing: 0.02em; }
+  .typo-sample { margin: 0 22px 0 22px; padding: 22px; border-radius: 4px;
+                 border: 1px solid rgba(0,0,0,0.08);
+                 /* bg + ink set inline per-theme */ }
+  .typo-sample .typo-display { font-size: 28px; line-height: 1.1; margin: 0 0 8px 0; }
+  .typo-sample .typo-serif { font-size: 13px; line-height: 1.5; margin: 0 0 10px 0; opacity: 0.9; }
+  .typo-sample .typo-sans-row { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+                                 margin: 0 0 12px 0; opacity: 0.75; }
+  .typo-sample .typo-rule { height: 2px; margin: 0 0 12px 0; /* color set inline */ }
+  .typo-sample .typo-mono { font-size: 12px; padding: 8px 10px; border-radius: 3px;
+                            margin: 0; white-space: pre; overflow: hidden; }
+  .typo-sample .typo-mono .kw { font-weight: 600; }
+  .palette-empty, .typo-empty { font-family: var(--chrome-mono); font-size: 10.5px;
+                                color: var(--chrome-muted); padding: 12px 22px;
+                                font-style: italic; }
+
   .card-foot { padding: 12px 22px; border-top: 1px solid var(--chrome-rule);
                font-family: var(--chrome-mono); font-size: 11px; color: var(--chrome-muted);
-               display: flex; gap: 14px; align-items: center; }
+               display: flex; gap: 14px; align-items: center; margin-top: 18px; }
   .card-foot code { background: var(--chrome-bg); padding: 2px 6px; border-radius: 2px;
                     color: var(--chrome-ink); }
   footer.doc { margin-top: 80px; padding-top: 24px; border-top: 1px solid var(--chrome-rule);
@@ -121,6 +156,94 @@ GALLERY_HTML = """<!doctype html>
 """
 
 
+# The 5 palette roles we surface as swatches — picked to convey the
+# theme's full mood without overwhelming the card. Excludes paper/rule/
+# table_stripe/ink_soft (less perceptually distinct from their parents).
+_SWATCH_ROLES = [
+    ("bg",         "bg"),
+    ("ink",        "ink"),
+    ("accent",     "accent"),
+    ("accent_alt", "alt"),
+    ("code_bg",    "code"),
+]
+
+
+def _font_family_css(family, fallback: str) -> str:
+    """Render a font-family value safe for inline style (quoted + fallback).
+
+    Tolerates non-string inputs (legacy nested-dict font specs that
+    list-themes.py already unwraps, but belt-and-suspenders here in
+    case a third party feeds raw spec data into render_typography_sample).
+    """
+    if not isinstance(family, str) or not family:
+        return fallback
+    if family.lower() in ("serif", "sans-serif", "monospace"):
+        return family
+    return f"'{family}', {fallback}"
+
+
+def render_swatches(palette: dict) -> str:
+    """Render up to 5 color swatches showing role + hex. Empty if no palette."""
+    if not palette:
+        return ('<div class="palette-empty">No palette data — pre-v0.2 theme. '
+                'Re-run /md-publisher:theme-advisor to add palette + fonts.</div>')
+    chips = []
+    for key, label in _SWATCH_ROLES:
+        hex_val = palette.get(key)
+        if not hex_val:
+            continue
+        chips.append(
+            f'<div class="swatch" style="background:{html_escape(hex_val)};">'
+            f'  <span class="role">{html_escape(label)}</span>'
+            f'  <span class="hex">{html_escape(hex_val)}</span>'
+            f'</div>'
+        )
+    if not chips:
+        return '<div class="palette-empty">No palette colors found.</div>'
+    return f'<div class="swatches">{"".join(chips)}</div>'
+
+
+def render_typography_sample(palette: dict, fonts: dict, name_label: str) -> str:
+    """Mini composition painted with the theme's actual palette + fonts.
+
+    Designed to give an at-a-glance feel — title in display font on bg+ink,
+    body line in serif, eyebrow row in sans (uppercase letterspaced),
+    accent rule, code snippet in mono with code_bg+code_text.
+    """
+    if not palette and not fonts:
+        return ('<div class="typo-empty">No palette/fonts data — pre-v0.2 theme. '
+                'Re-run /md-publisher:theme-advisor to add palette + fonts.</div>')
+    bg          = palette.get("bg",          "#FFFFFF")
+    ink         = palette.get("ink",         "#000000")
+    ink_soft    = palette.get("ink_soft",    ink)
+    accent      = palette.get("accent",      "#888888")
+    code_bg     = palette.get("code_bg",     "#F0F0F0")
+    code_text   = palette.get("code_text",   ink)
+    f_display   = _font_family_css(fonts.get("display"), "Georgia, serif")
+    f_serif     = _font_family_css(fonts.get("serif"),   "Georgia, serif")
+    f_sans      = _font_family_css(fonts.get("sans"),    "system-ui, sans-serif")
+    f_mono      = _font_family_css(fonts.get("mono"),    "ui-monospace, monospace")
+    container_style = (
+        f"background:{html_escape(bg)};color:{html_escape(ink)};"
+    )
+    return (
+        f'<div class="typo-sample" style="{container_style}">'
+        f'  <div class="typo-sans-row" style="font-family:{f_sans};color:{html_escape(ink_soft)};">'
+        f'    sample · {html_escape(name_label.lower())}</div>'
+        f'  <h3 class="typo-display" style="font-family:{f_display};">'
+        f'    {html_escape(name_label)}</h3>'
+        f'  <p class="typo-serif" style="font-family:{f_serif};color:{html_escape(ink_soft)};">'
+        f'    The quick brown fox jumps over the lazy dog. 0123456789</p>'
+        f'  <div class="typo-rule" style="background:{html_escape(accent)};"></div>'
+        f'  <pre class="typo-mono" style="font-family:{f_mono};'
+        f'background:{html_escape(code_bg)};color:{html_escape(code_text)};">'
+        f'<span class="kw" style="color:{html_escape(accent)};">def</span> render(theme):'
+        f'\n    <span class="kw" style="color:{html_escape(accent)};">return</span> theme.publish()'
+        f'</pre>'
+        f'</div>'
+    )
+
+
 def render_card(theme: dict) -> str:
     src = theme["source"]
     summary = theme.get("spec_summary", {}) or {}
@@ -130,29 +253,17 @@ def render_card(theme: dict) -> str:
     tagline = html_escape(summary.get("tagline", ""))
     audience = html_escape(summary.get("audience", ""))
     slug = html_escape(theme["slug"])
-
-    preview_path = Path(theme["path"]) / "preview.html"
-    if theme["has_preview"] and preview_path.exists():
-        # file:// URL is fine for local viewing in modern browsers
-        preview_url = preview_path.as_uri()
-        preview_html = (
-            f'<div class="card-preview">'
-            f'<iframe src="{preview_url}" loading="lazy" title="{name_label} preview"></iframe>'
-            f'</div>'
-        )
-    else:
-        preview_html = (
-            '<div class="card-preview no-preview">'
-            'No preview.html for this theme. '
-            'Run <code>/md-publisher:publish</code> with this theme to see it on a real doc.'
-            '</div>'
-        )
+    palette = summary.get("palette", {}) or {}
+    fonts = summary.get("fonts", {}) or {}
 
     audience_html = (
         f'<div class="card-tagline" style="margin-top:14px; font-style:normal; font-size:11px; '
         f'text-transform:uppercase; letter-spacing:0.16em;">{audience}</div>'
         if audience else ""
     )
+
+    swatches_html = render_swatches(palette)
+    typo_html = render_typography_sample(palette, fonts, summary.get("displayName") or theme["name"])
 
     return (
         f'<article class="card">'
@@ -164,7 +275,10 @@ def render_card(theme: dict) -> str:
         f'    {audience_html}'
         f'    <div class="card-slug">slug: <code>{slug}</code></div>'
         f'  </div>'
-        f'  {preview_html}'
+        f'  <div class="card-section-label">Palette</div>'
+        f'  {swatches_html}'
+        f'  <div class="card-section-label">Typography sample</div>'
+        f'  {typo_html}'
         f'  <div class="card-foot">'
         f'    /md-publisher:publish <code>&lt;doc.md&gt;</code> '
         f'    --theme <code>{html_escape(theme["name"])}</code>'
