@@ -34,6 +34,7 @@ SVG+PNG embed path (``mermaid-dual``) lands in Task 3.2.
 from __future__ import annotations
 
 import re
+from pathlib import Path
 from urllib.parse import urlparse, unquote
 
 from docx.document import Document as _Doc
@@ -275,6 +276,21 @@ def _embed_mermaid_png(doc: _Doc, png_path: str,
     run.add_picture(png_path, width=Inches(width_in))
 
 
+def _embed_missing_diagram_placeholder(doc: _Doc, png_path: str) -> None:
+    """Emit a visible placeholder paragraph when a referenced diagram is gone.
+
+    Reachable when (a) the build cache was cleaned between the mermaid
+    preprocess and the docx render, (b) the cache lives on a removable
+    drive that became unmounted, or (c) someone hand-edits the markdown
+    to paste a stale marker. Without this fallback, add_picture would
+    raise FileNotFoundError mid-render and corrupt the output.
+    """
+    p = doc.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    run = p.add_run(f"[mermaid diagram missing: {png_path}]")
+    run.italic = True
+
+
 def _try_handle_mermaid_html(doc: _Doc, html_content: str) -> bool:
     """If html_content contains a mermaid-png marker, embed it; return True.
 
@@ -282,11 +298,18 @@ def _try_handle_mermaid_html(doc: _Doc, html_content: str) -> bool:
     The dual-embed marker (mermaid-dual) is recognized but deferred to
     Task #14 — for now we extract the SVG path and embed via the PNG path
     by rasterizing on demand (lands in 14, currently a no-op skip).
+
+    Failure mode: if the marker references a missing PNG file (cache wiped,
+    unmounted drive, stale hand-edit), we emit a visible placeholder
+    paragraph rather than crashing the whole render.
     """
     m = _MERMAID_PNG_RE.search(html_content)
     if m:
         png_path = _file_uri_to_path(m.group(1))
-        _embed_mermaid_png(doc, png_path)
+        if not Path(png_path).is_file():
+            _embed_missing_diagram_placeholder(doc, png_path)
+        else:
+            _embed_mermaid_png(doc, png_path)
         return True
     # mermaid-dual: Task #14 will fan out to SVG+PNG embed. For Phase 2,
     # ignore — the PNG path is the supported one.
