@@ -366,12 +366,16 @@ def main() -> int:
         "code_text":    palette.get("codeText", palette["ink"]),
         "table_stripe": palette.get("tableStripe", palette.get("paper", palette["bg"])),
     }
+    # Persist bare family names (not CSS stacks) — Word's <w:rFonts> + the
+    # install-fonts skill's OS lookup both need a single resolvable family.
+    # Input fonts.body/sans/mono/display are CSS stacks per the docstring;
+    # first_family() drops everything after the first comma.
     body = fonts.get("body", fonts.get("display", "serif"))
     persisted["fonts"] = {
-        "serif":   body,
-        "sans":    fonts.get("sans", "sans-serif"),
-        "mono":    fonts.get("mono", "monospace"),
-        "display": fonts.get("display", body),
+        "serif":   first_family(body),
+        "sans":    first_family(fonts.get("sans", "sans-serif")),
+        "mono":    first_family(fonts.get("mono", "monospace")),
+        "display": first_family(fonts.get("display", body)),
     }
     (target / "spec.json").write_text(
         json.dumps(persisted, indent=2), encoding="utf-8"

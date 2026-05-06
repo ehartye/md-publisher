@@ -134,13 +134,36 @@ def _resolve_fonts(family: str, fonts_block: dict) -> Fonts:
 # back to scraping `:root { --bg: ...; --font-display: ...; }` from style.css.
 
 _CSS_VAR_RE = re.compile(r"--([a-zA-Z0-9-]+)\s*:\s*([^;]+);")
+
+# Map of CSS custom-property name -> Palette field. Multiple source names may
+# map to the same destination; with the dict-comprehension below, **later
+# entries win** when a theme declares more than one source for the same field.
+# Ordering rationale:
+#   - `accent`/`accent-soft` (atlas + phosphor convention) are listed AFTER
+#     `accent2`/`accent1` (arcade convention) so a theme with `--accent`
+#     wins over `--accent2` if it weirdly carries both. In practice arcade
+#     themes only have `accent[123]` and atlas/phosphor only have `accent`,
+#     so the choice is non-conflicting either way.
+#   - `--accent2` is the "primary" arcade accent (matches `_resolve_palette`'s
+#     arcade branch and cover.css's hard-offset shadow).
 _PALETTE_VAR_MAP = {
     "bg": "bg", "paper": "paper", "ink": "ink", "ink-soft": "ink_soft",
-    "accent": "accent", "accent-soft": "accent_alt", "rule": "rule",
+    "accent1": "accent_alt", "accent2": "accent",   # arcade convention
+    "accent": "accent", "accent-soft": "accent_alt",  # atlas/phosphor wins if both present
+    "rule": "rule",
     "code-bg": "code_bg", "code-text": "code_text",
     "table-stripe": "table_stripe",
 }
+
+# Same last-write-wins semantics. `font-body` is the convention used by every
+# bundled theme; `font-serif` is the convention encoded in this map's keys.
+# Both alias to the same Fonts.serif slot. `font-display2` is arcade's
+# Bungee-for-accents (matches `_resolve_fonts` arcade branch -> Fonts.sans).
+# `font-heading` is the default theme's name for the display role.
 _FONT_VAR_MAP = {
+    "font-display2": "sans",            # arcade
+    "font-heading": "display",          # default theme
+    "font-body": "serif",               # bundled-theme convention
     "font-display": "display", "font-sans": "sans",
     "font-mono": "mono", "font-serif": "serif",
 }
