@@ -37,7 +37,7 @@ def default_output_dir(source: Path, ts: str | None = None) -> Path:
 def derive_output_path(
     source: Path,
     *,
-    format: str = "pdf",
+    output_format: str = "pdf",
     explicit_output: Path | None = None,
     theme_label: str | None = None,
     ts: str | None = None,
@@ -46,19 +46,28 @@ def derive_output_path(
 
     - If --output is given, honor it verbatim. Caller's responsibility to
       ensure the parent dir exists / can be created and that the extension
-      matches `format` (validation happens at the CLI layer).
+      matches `output_format` (validation happens at the CLI layer).
     - Otherwise: `<source-dir>/.md-publisher/<ts>/<stem>[-<theme>].<ext>`.
       The theme suffix disambiguates multi-render runs (one timestamp,
       many themes/formats).
+
+    Parameter name `output_format` (not `format`) for two reasons: it
+    avoids shadowing the `format()` builtin in callers/tests, and it
+    matches `MermaidPreprocessor(..., output_format=...)` so callers
+    that thread both don't need to remember which sister API uses
+    which name.
     """
-    if format not in ("pdf", "docx"):
-        raise ValueError(f"unsupported format: {format!r}")
+    if output_format not in ("pdf", "docx"):
+        raise ValueError(
+            f"unsupported output_format: {output_format!r} "
+            f"(supported: 'pdf', 'docx')"
+        )
     if explicit_output is not None:
         return explicit_output
     out_dir = default_output_dir(source, ts=ts)
     stem = source.stem
     suffix = f"-{theme_label}" if theme_label else ""
-    return out_dir / f"{stem}{suffix}.{format}"
+    return out_dir / f"{stem}{suffix}.{output_format}"
 
 
 # Backwards-compat alias — existing callers use derive_output_pdf
@@ -69,9 +78,9 @@ def derive_output_pdf(
     theme_label: str | None = None,
     ts: str | None = None,
 ) -> Path:
-    """Deprecated alias for derive_output_path(format='pdf')."""
+    """Deprecated alias for derive_output_path(output_format='pdf')."""
     return derive_output_path(
-        source, format="pdf",
+        source, output_format="pdf",
         explicit_output=explicit_output,
         theme_label=theme_label, ts=ts,
     )
