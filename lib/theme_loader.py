@@ -25,6 +25,7 @@ without modifying plugin files).
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -125,34 +126,92 @@ def _resolve_fonts(family: str, fonts_block: dict) -> Fonts:
     raise ValueError(f"unknown theme family: {family}")
 
 
-# --- User-theme palette/fonts helpers — implementations land in Task 1.2 ---
+# --- User-theme palette/fonts helpers ---
 #
-# These stubs exist so that `resolve_selection()` for a user theme raises a
-# clear, actionable error today rather than NameError. Task 1.2 replaces each
-# body with a real implementation (CSS extraction + spec.json reader); the
-# signatures and call sites stay identical.
-_USER_THEME_HELPER_TODO = (
-    "user-theme palette/fonts arrives in Task 1.2 of the v0.2 productization "
-    "plan (docs/superpowers/plans/2026-05-06-docx-productization-implementation.md). "
-    "Until then, only built-in themes (atlas/phosphor/arcade) populate "
-    "ThemeSelection.palette and .fonts."
-)
+# User themes (in ~/.md-publisher/themes/) may declare explicit `palette` and
+# `fonts` blocks in their spec.json (v0.2+ scaffold), or pre-date v0.2 and only
+# carry CSS custom properties on `:root`. We try the spec block first and fall
+# back to scraping `:root { --bg: ...; --font-display: ...; }` from style.css.
 
-
-def _palette_from_user_spec(block: dict) -> Palette:
-    raise NotImplementedError(_USER_THEME_HELPER_TODO)
+_CSS_VAR_RE = re.compile(r"--([a-zA-Z0-9-]+)\s*:\s*([^;]+);")
+_PALETTE_VAR_MAP = {
+    "bg": "bg", "paper": "paper", "ink": "ink", "ink-soft": "ink_soft",
+    "accent": "accent", "accent-soft": "accent_alt", "rule": "rule",
+    "code-bg": "code_bg", "code-text": "code_text",
+    "table-stripe": "table_stripe",
+}
+_FONT_VAR_MAP = {
+    "font-display": "display", "font-sans": "sans",
+    "font-mono": "mono", "font-serif": "serif",
+}
 
 
 def _palette_from_css(css_path: Path) -> Palette:
-    raise NotImplementedError(_USER_THEME_HELPER_TODO)
+    """Best-effort palette extraction from a theme's :root CSS custom properties.
 
-
-def _fonts_from_user_spec(block: dict) -> Fonts:
-    raise NotImplementedError(_USER_THEME_HELPER_TODO)
+    Used when a user theme's spec.json lacks an explicit `palette` block.
+    Missing values get safe defaults; downstream prints a warning.
+    """
+    text = css_path.read_text(encoding="utf-8") if css_path.exists() else ""
+    raw: dict[str, str] = {}
+    for m in _CSS_VAR_RE.finditer(text):
+        raw[m.group(1)] = m.group(2).strip()
+    pdict = {dst: raw[src] for src, dst in _PALETTE_VAR_MAP.items() if src in raw}
+    return Palette(
+        bg=pdict.get("bg", "#FFFFFF"),
+        paper=pdict.get("paper", pdict.get("bg", "#FFFFFF")),
+        ink=pdict.get("ink", "#000000"),
+        ink_soft=pdict.get("ink_soft", pdict.get("ink", "#000000")),
+        accent=pdict.get("accent", "#000000"),
+        accent_alt=pdict.get("accent_alt", pdict.get("accent", "#000000")),
+        rule=pdict.get("rule", pdict.get("accent", "#CCCCCC")),
+        code_bg=pdict.get("code_bg", "#F0F0F0"),
+        code_text=pdict.get("code_text", "#000000"),
+        table_stripe=pdict.get("table_stripe", pdict.get("bg", "#FFFFFF")),
+    )
 
 
 def _fonts_from_css(css_path: Path) -> Fonts:
-    raise NotImplementedError(_USER_THEME_HELPER_TODO)
+    """Best-effort font extraction from CSS custom properties.
+
+    Falls back to system stacks for any font role not declared.
+    """
+    text = css_path.read_text(encoding="utf-8") if css_path.exists() else ""
+    raw: dict[str, str] = {}
+    for m in _CSS_VAR_RE.finditer(text):
+        raw[m.group(1)] = m.group(2).strip().split(",")[0].strip().strip("'\"")
+    fdict = {dst: raw[src] for src, dst in _FONT_VAR_MAP.items() if src in raw}
+    return Fonts(
+        serif=fdict.get("serif", "serif"),
+        sans=fdict.get("sans", "sans-serif"),
+        mono=fdict.get("mono", "monospace"),
+        display=fdict.get("display", fdict.get("serif", "serif")),
+    )
+
+
+def _palette_from_user_spec(block: dict) -> Palette:
+    """Read a single-theme spec.json's palette block (snake_case keys)."""
+    return Palette(
+        bg=block.get("bg", "#FFFFFF"),
+        paper=block.get("paper", block.get("bg", "#FFFFFF")),
+        ink=block.get("ink", "#000000"),
+        ink_soft=block.get("ink_soft", block.get("ink", "#000000")),
+        accent=block.get("accent", "#000000"),
+        accent_alt=block.get("accent_alt", block.get("accent", "#000000")),
+        rule=block.get("rule", block.get("accent", "#CCCCCC")),
+        code_bg=block.get("code_bg", "#F0F0F0"),
+        code_text=block.get("code_text", "#000000"),
+        table_stripe=block.get("table_stripe", block.get("bg", "#FFFFFF")),
+    )
+
+
+def _fonts_from_user_spec(block: dict) -> Fonts:
+    return Fonts(
+        serif=block.get("serif", "serif"),
+        sans=block.get("sans", "sans-serif"),
+        mono=block.get("mono", "monospace"),
+        display=block.get("display", block.get("serif", "serif")),
+    )
 
 
 @dataclass(frozen=True)
@@ -235,7 +294,7 @@ def resolve_selection(
             if spec_block and "palette" in spec_block:
                 palette = _palette_from_user_spec(spec_block["palette"])
             else:
-                palette = _palette_from_css(css_path)  # CSS fallback (Task 1.2)
+                palette = _palette_from_css(css_path)
             if spec_block and "fonts" in spec_block:
                 fonts = _fonts_from_user_spec(spec_block["fonts"])
             else:
