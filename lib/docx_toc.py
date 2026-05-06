@@ -25,6 +25,12 @@ from .theme_loader import ThemeSelection
 
 def insert_toc(doc: _Doc, selection: ThemeSelection) -> None:
     """Add a TOC heading and an auto-updating TOC field."""
+    if selection.palette is None:
+        raise ValueError(
+            "insert_toc requires a themed ThemeSelection (palette is None — "
+            "likely the 'default' theme was passed in; DOCX needs a real theme)."
+        )
+
     # Heading for the TOC
     p = doc.add_paragraph(style="Heading 1")
     p.add_run("Contents")
