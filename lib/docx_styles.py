@@ -34,12 +34,13 @@ from .theme_loader import ThemeSelection
 W_NS = nsmap["w"]
 
 
-def _make_w_elem(tag: str, **attrs) -> etree._Element:
-    """Build a <w:tag attr=val ...> element with the right namespace."""
-    el = etree.SubElement(etree.Element(_w("root")), _w(tag))
-    for k, v in attrs.items():
-        el.set(_w(k), str(v))
-    return el
+def _body_font(selection: ThemeSelection) -> str:
+    """The font used for body text, picked per family.
+
+    atlas + arcade: serif body. phosphor: mono body (it's a mono-everywhere
+    theme). Centralized so apply_theme + _set_default_font can't drift.
+    """
+    return selection.fonts.mono if selection.name == "phosphor" else selection.fonts.serif
 
 
 def set_page_background(doc: _Doc, color_hex: str) -> None:
@@ -331,10 +332,7 @@ def apply_theme(doc: _Doc, selection: ThemeSelection) -> None:
         )
 
     set_page_background(doc, selection.palette.bg)
-    _set_default_font(doc,
-                      selection.fonts.serif if selection.name == "atlas" else
-                      (selection.fonts.mono if selection.name == "phosphor" else selection.fonts.serif),
-                      selection.palette.ink)
+    _set_default_font(doc, _body_font(selection), selection.palette.ink)
 
     # Built-ins. Heading 1 picks up display font + accent color underline
     # (the underline is added per-paragraph since we want it only on H1s,
@@ -373,8 +371,7 @@ def apply_theme(doc: _Doc, selection: ThemeSelection) -> None:
                        keep_with_next=True)
 
     # Normal — body font, body color, comfortable line spacing.
-    body_font = selection.fonts.serif if selection.name == "atlas" else (
-        selection.fonts.mono if selection.name == "phosphor" else selection.fonts.serif)
+    body_font = _body_font(selection)
     normal = doc.styles["Normal"]
     normal.font.name = body_font
     normal.font.size = Pt(10.5)
