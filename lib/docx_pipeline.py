@@ -73,7 +73,13 @@ def build_docx(
     md_text = source.read_text(encoding="utf-8")
 
     title = _derive_title(md_text)
-    body_md = _strip_first_h1(md_text)
+    # Strip front matter BEFORE first-H1 stripping. Without this, markdown-it
+    # treats the closing `---` of the front-matter block as a setext H2
+    # underline, turning `author: ...\n---` into a fake Heading 2 in the body
+    # (and polluting the TOC). Reproducible bug found in quality-sentinel
+    # review of Task #11; affects every doc that ships with YAML front matter.
+    body_md = _strip_front_matter(md_text)
+    body_md = _strip_first_h1(body_md)
 
     # Pre-render mermaid blocks to PNG. The preprocessor needs a real
     # python-markdown Markdown instance to attach to (it's a Preprocessor
@@ -209,6 +215,18 @@ def _strip_first_h1(md_text: str) -> str:
 
 
 _FRONT_MATTER_RE = re.compile(r"^---\n(.*?)\n---\n", re.DOTALL)
+
+
+def _strip_front_matter(md_text: str) -> str:
+    """Remove the leading YAML front-matter block (``---\\n...\\n---\\n``).
+
+    Without this, markdown-it treats the closing ``---`` as a setext H2
+    underline, turning ``key: value\\n---`` into a fake Heading 2 in the
+    body — visible in every produced DOCX with a front-matter source and
+    polluting the TOC. Returns the input unchanged when no front matter
+    is present.
+    """
+    return _FRONT_MATTER_RE.sub("", md_text, count=1)
 
 
 def _extract_metadata(md_text: str) -> tuple[str, str, str, str]:
