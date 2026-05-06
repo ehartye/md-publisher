@@ -1,7 +1,8 @@
 """First-run bootstrap for md-publisher.
 
 Creates `~/.md-publisher/runtime/` with:
-  - .venv/ (Python venv with WeasyPrint, markdown, Pygments)
+  - .venv/ (Python venv: WeasyPrint, markdown, Pygments, Pillow,
+    python-docx, markdown-it-py, cairosvg, pytest)
   - node_modules/ (mermaid-cli + Puppeteer Chromium)
 
 Idempotent: re-runs are no-ops once both pieces are present. Each piece can
@@ -101,12 +102,36 @@ def npm_install() -> None:
     )
 
 
-def probe_gtk() -> tuple[bool, str]:
-    """On Windows, check whether a GTK runtime is locatable. Returns (ok, hint)."""
+def _venv_module_present(module: str, extra_path: str | None = None) -> bool:
+    """Check whether the bootstrapped venv can import `module`.
+
+    `extra_path` is prepended to the subprocess's PATH so native deps that
+    use ctypes.util.find_library (e.g. cairocffi -> libcairo-2.dll) can
+    locate their backing DLLs without a separate add_dll_directory call.
+    """
+    py = venv_python()
+    if not py.exists():
+        return False
+    env = os.environ.copy()
+    if extra_path:
+        env["PATH"] = extra_path + os.pathsep + env.get("PATH", "")
+    proc = subprocess.run(
+        [str(py), "-c", f"import {module}"],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        env=env,
+    )
+    return proc.returncode == 0
+
+
+def _find_gtk_dir() -> Path | None:
+    """Return the dir holding GTK DLLs on Windows, else None.
+
+    Mirrors lib/gtk_loader.find_gtk_runtime so bootstrap stays import-free
+    (the venv that hosts gtk_loader's deps may not exist yet at this stage).
+    """
     if sys.platform != "win32":
-        return True, "GTK is system-managed on this platform; no probe needed."
-    # Replicate gtk_loader.find_gtk_runtime's logic without importing it (we
-    # haven't added the venv to sys.path yet at this stage).
+        return None
     required = [
         "libgobject-2.0-0.dll",
         "libpango-1.0-0.dll",
@@ -126,7 +151,17 @@ def probe_gtk() -> tuple[bool, str]:
             continue
         d = Path(raw)
         if all((d / dll).exists() for dll in required):
-            return True, f"GTK runtime found at: {d}"
+            return d
+    return None
+
+
+def probe_gtk() -> tuple[bool, str]:
+    """On Windows, check whether a GTK runtime is locatable. Returns (ok, hint)."""
+    if sys.platform != "win32":
+        return True, "GTK is system-managed on this platform; no probe needed."
+    gtk_dir = _find_gtk_dir()
+    if gtk_dir is not None:
+        return True, f"GTK runtime found at: {gtk_dir}"
     return False, (
         "GTK runtime NOT found. WeasyPrint cannot render without it.\n"
         "Easiest fixes (one-time):\n"
@@ -145,7 +180,31 @@ def status() -> int:
     ok, hint = probe_gtk()
     print(f"  gtk:             {'OK' if ok else 'MISSING'}")
     print(f"                   {hint}")
-    return 0 if (venv_ready() and node_ready() and ok) else 1
+
+    docx_deps_ok = True
+    if venv_ready():
+        gtk_dir = _find_gtk_dir()
+        gtk_path = str(gtk_dir) if gtk_dir is not None else None
+        print("  docx:")
+        # cairosvg gets the GTK PATH because cairocffi resolves libcairo-2.dll
+        # via ctypes.util.find_library which honors PATH on Windows.
+        checks = [
+            ("python-docx",    "docx",        None),
+            ("markdown-it-py", "markdown_it", None),
+            ("cairosvg",       "cairosvg",    gtk_path),
+            ("Pillow",         "PIL",         None),
+            ("pytest",         "pytest",      None),
+        ]
+        for label, module, extra in checks:
+            present = _venv_module_present(module, extra_path=extra)
+            print(f"    {label:<14}  {'OK' if present else 'MISSING'}")
+            if not present:
+                docx_deps_ok = False
+    else:
+        print("  docx:            SKIPPED (venv missing)")
+        docx_deps_ok = False
+
+    return 0 if (venv_ready() and node_ready() and ok and docx_deps_ok) else 1
 
 
 def bootstrap(force: bool = False) -> int:
