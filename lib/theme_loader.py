@@ -71,6 +71,9 @@ def _resolve_palette(family: str, mode_palette: dict) -> Palette:
         accent_alt = p.get("accent1", accent)
     else:
         accent = p.get("accent", "#000000")
+        # accentSoft picked over accentCool: the former is the cross-family
+        # convention (atlas + phosphor both ship it); accentCool only exists
+        # in phosphor and would force a per-family branch here for one role.
         accent_alt = p.get("accentSoft", accent)
     return Palette(
         bg=p.get("bg", "#FFFFFF"),
@@ -96,6 +99,11 @@ def _resolve_fonts(family: str, fonts_block: dict) -> Fonts:
     Arcade's mono is hard-overridden to JetBrains Mono per DECISION.md
     concession #2: Recursive's MONO axis is not reliably addressable via
     Word's <w:rFonts>.
+
+    Invariant: `family` must be one of the three built-in families. Callers
+    outside `resolve_selection()` (which guards on `name != DEFAULT_THEME_SLUG`
+    and never invokes this for user themes) should ensure the same — user
+    themes use `_fonts_from_user_spec` / `_fonts_from_css` instead.
     """
     if family == "atlas":
         return Fonts(
@@ -115,6 +123,36 @@ def _resolve_fonts(family: str, fonts_block: dict) -> Fonts:
             display=fonts_block["display"]["family"],
         )
     raise ValueError(f"unknown theme family: {family}")
+
+
+# --- User-theme palette/fonts helpers — implementations land in Task 1.2 ---
+#
+# These stubs exist so that `resolve_selection()` for a user theme raises a
+# clear, actionable error today rather than NameError. Task 1.2 replaces each
+# body with a real implementation (CSS extraction + spec.json reader); the
+# signatures and call sites stay identical.
+_USER_THEME_HELPER_TODO = (
+    "user-theme palette/fonts arrives in Task 1.2 of the v0.2 productization "
+    "plan (docs/superpowers/plans/2026-05-06-docx-productization-implementation.md). "
+    "Until then, only built-in themes (atlas/phosphor/arcade) populate "
+    "ThemeSelection.palette and .fonts."
+)
+
+
+def _palette_from_user_spec(block: dict) -> Palette:
+    raise NotImplementedError(_USER_THEME_HELPER_TODO)
+
+
+def _palette_from_css(css_path: Path) -> Palette:
+    raise NotImplementedError(_USER_THEME_HELPER_TODO)
+
+
+def _fonts_from_user_spec(block: dict) -> Fonts:
+    raise NotImplementedError(_USER_THEME_HELPER_TODO)
+
+
+def _fonts_from_css(css_path: Path) -> Fonts:
+    raise NotImplementedError(_USER_THEME_HELPER_TODO)
 
 
 @dataclass(frozen=True)
