@@ -7,7 +7,11 @@ themes/theme-spec.json) and writes a theme directory at
 
     style.css            - WeasyPrint stylesheet (palette + fonts substituted in)
     mermaid-config.json  - mmdc config (palette + fonts)
-    spec.json            - the input spec, persisted as the canonical record
+    spec.json            - canonical record. Input palette/fonts are normalized
+                           to snake_case keys (ink_soft, accent_alt, code_bg,
+                           code_text, table_stripe; serif/sans/mono/display)
+                           so lib.theme_loader.Palette / Fonts can read them
+                           directly when the DOCX pipeline runs.
     preview.html         - small static preview of typography + palette
 
 Usage:
@@ -346,9 +350,31 @@ def main() -> int:
     json.loads(mermaid_cfg_str)
     (target / "mermaid-config.json").write_text(mermaid_cfg_str, encoding="utf-8")
 
-    # Spec.json — persist the input verbatim, plus the slug field as a sanity record
+    # Spec.json — persist the input but normalize palette + fonts to the
+    # snake_case keys lib.theme_loader.Palette/Fonts expects so DOCX output
+    # honors brand palette/fonts without the CSS-extraction fallback.
+    persisted = dict(spec)
+    persisted["palette"] = {
+        "bg":           palette["bg"],
+        "paper":        palette.get("paper", palette["bg"]),
+        "ink":          palette["ink"],
+        "ink_soft":     palette.get("inkSoft", palette["ink"]),
+        "accent":       palette["accent"],
+        "accent_alt":   palette.get("accentSoft", palette["accent"]),
+        "rule":         palette.get("rule", palette.get("inkSoft", palette["ink"])),
+        "code_bg":      palette.get("codeBg", palette.get("paper", palette["bg"])),
+        "code_text":    palette.get("codeText", palette["ink"]),
+        "table_stripe": palette.get("tableStripe", palette.get("paper", palette["bg"])),
+    }
+    body = fonts.get("body", fonts.get("display", "serif"))
+    persisted["fonts"] = {
+        "serif":   body,
+        "sans":    fonts.get("sans", "sans-serif"),
+        "mono":    fonts.get("mono", "monospace"),
+        "display": fonts.get("display", body),
+    }
     (target / "spec.json").write_text(
-        json.dumps(spec, indent=2), encoding="utf-8"
+        json.dumps(persisted, indent=2), encoding="utf-8"
     )
 
     # Preview HTML — uses the same generated style.css inline
