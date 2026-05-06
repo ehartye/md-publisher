@@ -36,6 +36,88 @@ DEFAULT_THEME_SLUG = "default"
 
 
 @dataclass(frozen=True)
+class Palette:
+    bg: str          # page background
+    paper: str       # secondary background (cards, code blocks if differs from page)
+    ink: str         # primary text
+    ink_soft: str    # secondary text (captions, meta, muted)
+    accent: str      # primary accent (rules, links, code-block stripe)
+    accent_alt: str  # secondary accent (arcade gradient end, callout backgrounds)
+    rule: str        # horizontal rule color
+    code_bg: str     # code block background
+    code_text: str   # code block foreground
+    table_stripe: str  # alternating-row background
+
+
+@dataclass(frozen=True)
+class Fonts:
+    serif: str      # body in atlas; everything in phosphor; body in arcade
+    sans: str       # accent type (TOC entries, eyebrows, captions, table headers)
+    mono: str       # code blocks + inline code
+    display: str    # cover title, h1/h2 in atlas/arcade
+
+
+def _resolve_palette(family: str, mode_palette: dict) -> Palette:
+    """Normalize a mode palette block from theme-spec.json into a uniform Palette.
+
+    Atlas/Phosphor use a single `accent`; arcade exposes `accent1`/`accent2`/
+    `accent3`. We pick `accent2` as primary for arcade (matches cover.css's
+    hard offset shadow color, the most distinctive arcade signal); `accent1`
+    becomes accent_alt.
+    """
+    p = mode_palette
+    if family == "arcade":
+        accent = p.get("accent2", p.get("accent1", "#000000"))
+        accent_alt = p.get("accent1", accent)
+    else:
+        accent = p.get("accent", "#000000")
+        accent_alt = p.get("accentSoft", accent)
+    return Palette(
+        bg=p.get("bg", "#FFFFFF"),
+        paper=p.get("paper", p.get("bg", "#FFFFFF")),
+        ink=p.get("ink", "#000000"),
+        ink_soft=p.get("inkSoft", p.get("ink", "#000000")),
+        accent=accent,
+        accent_alt=accent_alt,
+        rule=p.get("rule", accent),
+        code_bg=p.get("codeBg", p.get("bg", "#F0F0F0")),
+        code_text=p.get("codeText", p.get("ink", "#000000")),
+        table_stripe=p.get("tableStripe", p.get("bg", "#FFFFFF")),
+    )
+
+
+def _resolve_fonts(family: str, fonts_block: dict) -> Fonts:
+    """Pick serif/sans/mono/display per-family.
+
+    The theme-spec uses different key sets per family (atlas: body/sansAccent/
+    mono/display; phosphor: body for everything; arcade: body=Recursive,
+    display2=Bungee, code=Recursive-mono-axis). Collapse to one shape.
+
+    Arcade's mono is hard-overridden to JetBrains Mono per DECISION.md
+    concession #2: Recursive's MONO axis is not reliably addressable via
+    Word's <w:rFonts>.
+    """
+    if family == "atlas":
+        return Fonts(
+            serif=fonts_block["body"]["family"],
+            sans=fonts_block["sansAccent"]["family"],
+            mono=fonts_block["mono"]["family"],
+            display=fonts_block["display"]["family"],
+        )
+    if family == "phosphor":
+        plex = fonts_block["body"]["family"]
+        return Fonts(serif=plex, sans=plex, mono=plex, display=plex)
+    if family == "arcade":
+        return Fonts(
+            serif=fonts_block["body"]["family"],
+            sans=fonts_block["display2"]["family"],
+            mono="JetBrains Mono",
+            display=fonts_block["display"]["family"],
+        )
+    raise ValueError(f"unknown theme family: {family}")
+
+
+@dataclass(frozen=True)
 class ThemeSelection:
     """A resolved theme + the asset paths it implies."""
     slug: str
@@ -45,6 +127,9 @@ class ThemeSelection:
     mermaid_config_path: Path
     is_user_theme: bool  # True if from ~/.md-publisher/themes/, False if built-in
     spec_block: dict | None  # single-theme spec block (None for "default")
+    # New (DOCX-only consumers — existing PDF code ignores):
+    palette: Palette | None = None
+    fonts: Fonts | None = None
 
 
 def _slug(name: str, mode: str | None) -> str:
@@ -104,6 +189,26 @@ def resolve_selection(
     else:
         spec_block = _load_builtin_spec_block(name, mode)
 
+    palette: Palette | None = None
+    fonts: Fonts | None = None
+    if name != DEFAULT_THEME_SLUG:
+        if is_user:
+            # User theme: spec.json may have top-level palette + fonts blocks.
+            if spec_block and "palette" in spec_block:
+                palette = _palette_from_user_spec(spec_block["palette"])
+            else:
+                palette = _palette_from_css(css_path)  # CSS fallback (Task 1.2)
+            if spec_block and "fonts" in spec_block:
+                fonts = _fonts_from_user_spec(spec_block["fonts"])
+            else:
+                fonts = _fonts_from_css(css_path)
+        else:
+            # Built-in: use the per-family resolver against the aggregate spec.
+            if spec_block:
+                fonts = _resolve_fonts(name, spec_block["fonts"])
+                if mode and "modes" in spec_block:
+                    palette = _resolve_palette(name, spec_block["modes"][mode])
+
     return ThemeSelection(
         slug=slug,
         name=name,
@@ -112,6 +217,8 @@ def resolve_selection(
         mermaid_config_path=mermaid_path,
         is_user_theme=is_user,
         spec_block=spec_block,
+        palette=palette,
+        fonts=fonts,
     )
 
 
