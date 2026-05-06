@@ -210,7 +210,12 @@ def add_cover_page(doc: _Doc, selection: ThemeSelection, *,
             _add_run_with_color(p, attribution.upper(),
                                 selection.palette.accent_alt)
         elif selection.name == "atlas":
-            p.add_run(attribution.upper())  # MdpCoverMeta has caps for atlas
+            # MdpCoverMeta carries <w:caps val="1"/> for atlas (set in
+            # docx_styles._build_cover_styles), so the rendered text is
+            # uppercase via Word's caps effect — leaving the underlying
+            # text mixed-case so copy/paste + screen readers get the
+            # original characters.
+            p.add_run(attribution)
         else:
             p.add_run(attribution)
 
