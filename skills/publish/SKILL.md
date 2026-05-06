@@ -82,8 +82,12 @@ For single-PDF builds, just one line. For `--all`, six lines.
 ## Failure modes
 
 - **Bootstrap not yet run** — the script handles this automatically; surface the bootstrap output to the user (it takes ~2 min on first call).
-- **GTK runtime missing on Windows** — clear error from the bootstrap probe with install hints. Plugin cannot proceed without GTK; document and point at install methods (Inkscape bundles it, or the dedicated GTK3 Runtime installer).
+- **Native deps missing (WeasyPrint Pango/Cairo)** — first triage: tell user to run `python <plugin-root>/runtime/bootstrap.py --doctor`. The doctor mode prints a platform-specific fix:
+  - **Windows**: install Inkscape (https://inkscape.org), GIMP, or the [GTK3 Runtime](https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer); plugin auto-detects.
+  - **macOS**: `brew install pango cairo gdk-pixbuf libffi`. Plugin auto-prepends `<brew --prefix>/lib` to `DYLD_LIBRARY_PATH` so the dynamic loader finds the libs. SIP-protected Python (e.g. `/usr/bin/python3`) ignores `DYLD_LIBRARY_PATH` — recommend brew/pyenv Python in that case.
+  - **Linux**: `apt install libpango-1.0-0 libcairo2 libgdk-pixbuf2.0-0 libffi-dev` (Debian/Ubuntu) or distro equivalent.
 - **Unknown theme** — `theme_loader.resolve_selection` raises with the searched paths. Tell the user the theme isn't installed and suggest `/md-publisher:theme-gallery` to see what is available.
+- **Missing fonts (DOCX path)** — publish-docx prints a non-blocking warning when the resolved theme's fonts aren't installed locally. Suggest `/md-publisher:install-fonts --theme <name> --mode <mode>` to fix; the build proceeds with Word's font substitutes in the meantime.
 - **Mermaid render failure** — mmdc errors get propagated; usually a syntax problem in the diagram source. Quote the failing block back to the user.
 
 ## Reference files

@@ -17,12 +17,19 @@ os.environ["CLAUDE_PLUGIN_ROOT"] = str(PLUGIN_ROOT)
 sys.path.insert(0, str(PLUGIN_ROOT))
 
 
-# Default corpus location (the bake-off worktree alongside the plugin
-# worktree). Tests that need a real markdown source can override via the
-# MD_PUBLISHER_TEST_CORPUS env var; integration tests skip if neither
-# the env var nor the default path exists.
-_DEFAULT_CORPUS = Path(
-    "C:/Users/ehart/repos/md-publisher-bakeoff/corpus/transformers-explainer-themed.md"
+# Default corpus location: try ~/repos/md-publisher-bakeoff/ (works across
+# macOS/Linux/Windows since most contributors clone under ~/repos/), then
+# fall back to a sibling-of-plugin layout. Tests that need a real markdown
+# source can override via the MD_PUBLISHER_TEST_CORPUS env var; integration
+# tests skip if neither the env var nor any default path exists.
+_CORPUS_REL = "md-publisher-bakeoff/corpus/transformers-explainer-themed.md"
+_DEFAULT_CORPUS_CANDIDATES = [
+    Path.home() / "repos" / _CORPUS_REL,
+    PLUGIN_ROOT.parent / _CORPUS_REL,
+]
+_DEFAULT_CORPUS = next(
+    (p for p in _DEFAULT_CORPUS_CANDIDATES if p.exists()),
+    _DEFAULT_CORPUS_CANDIDATES[0],  # arbitrary fallback for the .exists() check
 )
 
 

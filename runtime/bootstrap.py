@@ -158,19 +158,82 @@ def _find_gtk_dir() -> Path | None:
 
 
 def probe_gtk() -> tuple[bool, str]:
-    """On Windows, check whether a GTK runtime is locatable. Returns (ok, hint)."""
-    if sys.platform != "win32":
-        return True, "GTK is system-managed on this platform; no probe needed."
-    gtk_dir = _find_gtk_dir()
-    if gtk_dir is not None:
-        return True, f"GTK runtime found at: {gtk_dir}"
+    """Check whether the GTK/Pango/Cairo native deps are locatable.
+
+    Returns (ok, hint).
+
+    Windows: scans well-known install dirs for the GTK DLLs.
+    macOS:   checks `<brew --prefix>/lib/libpango-1.0.0.dylib` if brew is on
+             PATH; warns if not (Homebrew is the standard install path).
+    Linux:   checks `ldconfig -p` for libpango-1.0; falls back to a stat
+             of /usr/lib*/libpango-1.0.so* if ldconfig isn't available.
+
+    For a deeper check (actually load WeasyPrint and render a PDF), run
+    `--doctor` instead — that catches dyld-can't-find-it failures the
+    static probes here can't.
+    """
+    if sys.platform == "win32":
+        gtk_dir = _find_gtk_dir()
+        if gtk_dir is not None:
+            return True, f"GTK runtime found at: {gtk_dir}"
+        return False, (
+            "GTK runtime NOT found. WeasyPrint cannot render without it.\n"
+            "Easiest fixes (one-time):\n"
+            "  - Install Inkscape (https://inkscape.org) — bundles a complete GTK3.\n"
+            "  - Or GTK3 Runtime: "
+            "https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer\n"
+            "If GTK is somewhere unusual, set WEASYPRINT_DLL_DIR=<gtk-bin-dir>."
+        )
+    if sys.platform == "darwin":
+        brew = shutil.which("brew")
+        if not brew:
+            return False, (
+                "Homebrew not on PATH. WeasyPrint needs Pango/Cairo via brew:\n"
+                "  brew install pango cairo gdk-pixbuf libffi\n"
+                "(See https://brew.sh to install Homebrew.)"
+            )
+        try:
+            proc = subprocess.run(
+                [brew, "--prefix"], capture_output=True, text=True, timeout=5
+            )
+            brew_prefix = proc.stdout.strip() or "/opt/homebrew"
+        except (OSError, subprocess.SubprocessError):
+            brew_prefix = "/opt/homebrew"
+        # Pango installs as libpango-1.0.dylib; check the real-life filename.
+        candidates = [
+            Path(brew_prefix) / "lib" / "libpango-1.0.dylib",
+            Path(brew_prefix) / "lib" / "libpango-1.0.0.dylib",
+        ]
+        if any(p.exists() for p in candidates):
+            return True, f"Pango/Cairo found via Homebrew at: {brew_prefix}/lib"
+        return False, (
+            f"Pango not found at {brew_prefix}/lib. Install with:\n"
+            "  brew install pango cairo gdk-pixbuf libffi\n"
+            "Then re-run --status. If `--doctor` still fails after install,\n"
+            "the dyld loader may not search the brew prefix; the plugin auto-\n"
+            "prepends DYLD_LIBRARY_PATH but SIP-protected Python (e.g. the\n"
+            "system /usr/bin/python3) ignores it. Use brew/pyenv Python."
+        )
+    # Linux
+    if shutil.which("ldconfig"):
+        try:
+            proc = subprocess.run(
+                ["ldconfig", "-p"], capture_output=True, text=True, timeout=5
+            )
+            if "libpango-1.0" in proc.stdout:
+                return True, "Pango/Cairo present in ldconfig cache."
+        except (OSError, subprocess.SubprocessError):
+            pass
+    # Fallback: stat the lib in standard locations
+    for d in ("/usr/lib", "/usr/lib/x86_64-linux-gnu", "/usr/lib64"):
+        for name in ("libpango-1.0.so.0", "libpango-1.0.so"):
+            if (Path(d) / name).exists():
+                return True, f"Pango present at {d}/{name}"
     return False, (
-        "GTK runtime NOT found. WeasyPrint cannot render without it.\n"
-        "Easiest fixes (one-time):\n"
-        "  - Install Inkscape (https://inkscape.org) — bundles a complete GTK3.\n"
-        "  - Or GTK3 Runtime: "
-        "https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer\n"
-        "If GTK is somewhere unusual, set WEASYPRINT_DLL_DIR=<gtk-bin-dir>."
+        "Pango not found. Install via your package manager:\n"
+        "  Debian/Ubuntu: sudo apt install libpango-1.0-0 libcairo2 libgdk-pixbuf2.0-0 libffi-dev\n"
+        "  Fedora/RHEL:   sudo dnf install pango cairo gdk-pixbuf2 libffi\n"
+        "  Arch:          sudo pacman -S pango cairo gdk-pixbuf2 libffi"
     )
 
 
