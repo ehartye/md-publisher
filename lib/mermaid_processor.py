@@ -141,25 +141,38 @@ class MermaidPreprocessor(Preprocessor):
             if not png_path.exists():
                 mmd_path.write_text(render_source, encoding="utf-8")
                 self._invoke_mmdc(mmd_path, png_path, fmt="png")
-            # PNG path is for DOCX consumers — return a marker the docx
-            # renderer recognizes (the actual embed happens in
-            # lib/docx_renderer.py). Not a placeholder; we emit raw HTML
-            # because no SVG post-processing applies.
-            return f"<img class='mermaid-png' src='{png_path.as_uri()}' />"
+            # PNG path is for DOCX consumers. Route through the same
+            # placeholder/figures-dict roundtrip as SVG mode so the
+            # postprocessor unwraps any <p>...</p> markdown wraps around
+            # us — keeps PNG and SVG modes structurally identical from
+            # the consumer's perspective (no surprise <p> wrapper to
+            # work around in the docx renderer's HTML walker).
+            img_html = f"<img class='mermaid-png' src='{png_path.as_uri()}' />"
+            placeholder = f"{PLACEHOLDER_PREFIX}{digest}"
+            self.figures[placeholder] = img_html
+            return placeholder
 
         if self.output_format == "dual":
             # Render SVG once via mmdc; rasterize to PNG via cairosvg in
             # Task 3.2. For Phase 1 we emit a marker carrying the SVG path;
             # the docx renderer's dual-embed branch reads it and synthesizes
             # the PNG companion when 3.2 lands.
+            #
+            # Dual-mode HTML is DOCX-only — never feed to a browser/PDF
+            # renderer. The empty src='' on the rendered <img> is intentional:
+            # makes accidental misuse fail visibly (broken-image icon)
+            # rather than silently render nothing.
             svg_path = self.build_dir / f"{digest}.svg"
             if not svg_path.exists():
                 mmd_path.write_text(render_source, encoding="utf-8")
                 self._invoke_mmdc(mmd_path, svg_path, fmt="svg")
-            return (
-                f"<img class='mermaid-dual' "
+            img_html = (
+                f"<img class='mermaid-dual' src='' "
                 f"data-svg='{svg_path.as_uri()}' />"
             )
+            placeholder = f"{PLACEHOLDER_PREFIX}{digest}"
+            self.figures[placeholder] = img_html
+            return placeholder
 
         # output_format == "svg" (default — PDF path).
         svg_path = self.build_dir / f"{digest}.svg"
