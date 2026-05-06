@@ -68,6 +68,9 @@ def build_docx(
 
     if build_dir is None:
         build_dir = output.parent / "build"
+    # Resolve to absolute so downstream `as_uri()` calls work (relative paths
+    # without a drive letter on Windows raise ValueError there).
+    build_dir = build_dir.resolve()
     build_dir.mkdir(parents=True, exist_ok=True)
 
     md_text = source.read_text(encoding="utf-8")
