@@ -91,12 +91,25 @@ def _font_installed(family: str) -> bool:
 
 
 def _families_from_themes(theme_selections: list) -> set[str]:
-    """Collect non-generic font family names from a list of ThemeSelection."""
+    """Collect non-generic font family names from a list of ThemeSelection.
+
+    Defensively skips non-string font values — pre-v0.2 user themes can
+    have spec.json fonts blocks in the bake-off `{family: "X"}` form
+    that lib.theme_loader._fonts_from_user_spec doesn't currently
+    unwrap. Warning printed once per offending family so the user knows
+    which theme to fix without crashing the install flow.
+    """
     needed: set[str] = set()
     for sel in theme_selections:
         if sel.fonts is None:
             continue
         for fam in (sel.fonts.serif, sel.fonts.sans, sel.fonts.mono, sel.fonts.display):
+            if not isinstance(fam, str):
+                sys.stderr.write(
+                    f"  [warn] skipping non-string font value in {sel.slug}: "
+                    f"{fam!r} (regenerate this theme via theme-advisor)\n"
+                )
+                continue
             if fam.lower() not in _GENERIC_CSS_FAMILIES:
                 needed.add(fam)
     return needed
