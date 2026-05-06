@@ -83,6 +83,39 @@ A successful run writes `<some-doc-dir>/.md-publisher/<timestamp>/<slug>.pdf` an
 
 ## Troubleshooting
 
+For native-dep loading problems (Pango / Cairo / GDK-Pixbuf, mmdc, font dir), run:
+
+```
+python <plugin-root>/runtime/bootstrap.py --doctor
+```
+
+`--doctor` actually exercises each native dep (full PDF write, cairosvg rasterize, mmdc --version, font-dir write probe) instead of just checking that the file exists, then prints platform-specific recovery instructions. Common cases:
+
+### macOS — WeasyPrint can't find Pango/Cairo despite `brew install pango cairo`
+
+The dynamic loader doesn't search Homebrew's prefix by default on Apple Silicon. The plugin auto-detects `brew --prefix` and prepends `<prefix>/lib` to `DYLD_LIBRARY_PATH` at runtime (see `lib/gtk_loader.py::_ensure_macos_dyld_path`). If you still see `OSError: cannot load library 'libpango-1.0-0.dylib'`, run `--doctor` to confirm brew-prefix detection worked, and add to your shell rc as a permanent fix:
+
+```bash
+# Apple Silicon (M-series)
+export DYLD_LIBRARY_PATH="/opt/homebrew/lib:$DYLD_LIBRARY_PATH"
+# Intel macOS
+export DYLD_LIBRARY_PATH="/usr/local/lib:$DYLD_LIBRARY_PATH"
+```
+
+### Linux — Pango/Cairo missing entirely
+
+```bash
+sudo apt install libpango-1.0-0 libcairo2 libgdk-pixbuf2.0-0 libffi-dev   # Debian/Ubuntu
+sudo dnf install pango cairo gdk-pixbuf2 libffi                            # Fedora/RHEL
+sudo pacman -S pango cairo gdk-pixbuf2 libffi                              # Arch
+```
+
+### Windows — GTK 3 runtime not found
+
+Install Inkscape (https://inkscape.org) or GIMP — they bundle a complete GTK3 stack the plugin auto-detects. Or install [GTK3 Runtime](https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer) directly. If GTK lives somewhere unusual, set `WEASYPRINT_DLL_DIR=<gtk-bin-dir>`.
+
+### Other symptoms
+
 | Symptom | Cause | Fix |
 |---|---|---|
 | `--status` reports `gtk: MISSING` (Windows) | Pango / Cairo / GDK-Pixbuf DLLs not on the search path | Install Inkscape (https://inkscape.org) or GIMP — they bundle a complete GTK3 stack that the plugin auto-detects. Alternatively install [GTK3 Runtime](https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer). If GTK lives somewhere unusual, set `WEASYPRINT_DLL_DIR=<gtk-bin-dir>`. |
