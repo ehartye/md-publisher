@@ -1,20 +1,28 @@
-"""Locate and register a GTK runtime on Windows so WeasyPrint can load.
+"""Locate and register a GTK runtime so WeasyPrint can load native deps.
 
 Why this module exists
 ----------------------
 WeasyPrint depends on Pango / Cairo / GDK-Pixbuf / GLib / GObject DLLs.
-On Linux and macOS these are typically installed via the system package
-manager and end up on the dynamic-loader search path. On Windows,
-Python 3.8+ deliberately ignores PATH for native-DLL resolution by
-default — a security hardening change. The recommended workaround is
-`os.add_dll_directory(...)` to whitelist a specific directory.
+On Linux these are typically installed via the system package manager
+and end up on the dynamic-loader search path. On macOS via Homebrew
+they live under `<brew --prefix>/lib`, which the dynamic loader does
+NOT search by default on Apple Silicon — `DYLD_LIBRARY_PATH` must be
+set explicitly. On Windows, Python 3.8+ deliberately ignores PATH for
+native-DLL resolution by default — a security hardening change; the
+recommended workaround is `os.add_dll_directory(...)` to whitelist a
+specific directory.
 
-This module sniffs a list of well-known install locations for GTK and
-calls add_dll_directory on the first one that contains the required
-DLLs. If none are found we raise a clear error pointing the user at
-the GTK installer. Doing this in code (rather than asking the user
-to set PATH or install a separate runtime) drops one of the major
-papercuts of running WeasyPrint on Windows.
+This module:
+  - On Windows, sniffs well-known GTK install locations and calls
+    `os.add_dll_directory` on the first one that contains the required
+    DLLs.
+  - On macOS, auto-prepends `<brew --prefix>/lib` to DYLD_LIBRARY_PATH
+    if brew is on PATH and the dir isn't already there.
+  - On Linux, no-op (system loader handles it).
+
+Doing this in code (rather than asking the user to set PATH/dyld vars
+or install a separate runtime) drops one of the major papercuts of
+running WeasyPrint on macOS + Windows.
 
 Failure mode
 ------------
@@ -26,6 +34,8 @@ failure" per the spec). We surface a precise error in that case.
 from __future__ import annotations
 
 import os
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -74,10 +84,57 @@ def find_gtk_runtime() -> Path | None:
     return None
 
 
+def _ensure_macos_dyld_path() -> None:
+    """If DYLD_LIBRARY_PATH doesn't include the brew prefix, prepend it.
+
+    On Apple Silicon the dynamic loader does not search /opt/homebrew/lib
+    by default; WeasyPrint's CFFI bindings need libpango/libcairo to be
+    loadable. Setting DYLD_LIBRARY_PATH from the user's shell rc works
+    but is a footgun (every freshly-spawned shell forgets it). Doing it
+    here means any Python process that imports gtk_loader gets the right
+    env without manual setup.
+
+    No-op when:
+      - not on darwin
+      - brew isn't on PATH (user has Pango via MacPorts or hand-built)
+      - brew --prefix fails to run for any reason
+      - the prefix is already on DYLD_LIBRARY_PATH
+    """
+    if sys.platform != "darwin":
+        return
+    brew = shutil.which("brew")
+    if not brew:
+        return
+    try:
+        proc = subprocess.run(
+            [brew, "--prefix"], capture_output=True, text=True, timeout=5
+        )
+    except (OSError, subprocess.SubprocessError):
+        return
+    brew_prefix = proc.stdout.strip()
+    if not brew_prefix:
+        return
+    brew_lib = f"{brew_prefix}/lib"
+    existing = os.environ.get("DYLD_LIBRARY_PATH", "")
+    if brew_lib in existing.split(":"):
+        return
+    os.environ["DYLD_LIBRARY_PATH"] = (
+        f"{brew_lib}:{existing}" if existing else brew_lib
+    )
+
+
 def register_gtk_runtime() -> Path | None:
-    """Find a GTK runtime and add it to the DLL search path. Returns the dir."""
+    """Find a GTK runtime and make it loadable. Returns the dir on Windows.
+
+    macOS:   prepends `<brew --prefix>/lib` to DYLD_LIBRARY_PATH (returns None).
+    Linux:   no-op (system loader handles it; returns None).
+    Windows: locates a GTK install and calls os.add_dll_directory.
+    """
+    # macOS: handle dyld first; other platforms ignore.
+    _ensure_macos_dyld_path()
+
     if sys.platform != "win32":
-        # Other platforms rely on the system dynamic loader; nothing to do.
+        # Linux + macOS rely on the (now-augmented) system dynamic loader.
         return None
 
     gtk_dir = find_gtk_runtime()

@@ -1,6 +1,6 @@
 ---
 name: publish
-description: This skill should be used when the user asks to "publish doc.md to PDF", "render markdown as themed PDF", "convert markdown to PDF", "build a themed PDF", "make a PDF with the atlas/phosphor/arcade theme", "render every theme", "build and open the PDF", or invokes /md-publisher:publish. Renders any markdown document (with embedded mermaid) to a paged, searchable, themed PDF via WeasyPrint, with optional multi-theme rendering and post-build open.
+description: This skill should be used when the user asks to "publish doc.md to PDF", "publish doc.md to DOCX", "render markdown as themed PDF", "render markdown as DOCX", "convert markdown to PDF or Word", "build a themed PDF", "make a PDF with the atlas/phosphor/arcade theme", "render every theme", "build PDF and DOCX of doc.md", "build and open the PDF", or invokes /md-publisher:publish. Renders any markdown document (with embedded mermaid) to a paged, searchable, themed PDF via WeasyPrint and/or a Microsoft Word DOCX via python-docx, with optional multi-theme rendering and post-build open.
 ---
 
 # publish
@@ -11,10 +11,14 @@ Render a markdown document with embedded mermaid diagrams to a paged, searchable
 
 Trigger this skill when the user wants any of:
 - "publish `doc.md`" / "build PDF from `doc.md`"
+- "publish `doc.md` to DOCX" / "build a Word doc from `doc.md`"
+- "build PDF and DOCX of `doc.md`" (use `--format both`)
 - "render `doc.md` with the atlas theme" / "with phosphor dark"
 - "build all six themed variants of `doc.md`"
 - "open the PDF after building"
-- explicit invocation: `/md-publisher:publish <markdown-file>`
+- explicit invocation: `/md-publisher:publish <markdown-file> [--format pdf|docx|both]`
+
+**DOCX consumer note:** the DOCX path needs the theme's fonts installed locally (Word substitutes when fonts are missing). On first DOCX build, run `/md-publisher:install-fonts` once to install the bundled themes' Google Fonts per-user.
 
 ## Workflow
 
@@ -38,10 +42,11 @@ The publish script accepts:
 | `<input.md>` | required | Path to source markdown |
 | `--theme <name>` | `default` | Theme name: `default`, `atlas`, `phosphor`, `arcade`, or any user-installed custom |
 | `--mode <light\|dark>` | `light` | Mode for theme variants. **Silently ignored when `--theme default`** (default has no mode variants). |
-| `--output <path>` | derived | Override the output PDF path. When set, `.md-publisher/<ts>/` convention is bypassed. Ignored when `--all` is set. |
-| `--all` | off | Render every (theme × mode) combo for built-in themes (6 PDFs). Ignores `--theme`, `--mode`, and `--output`. |
-| `--no-cover` | off | Suppress the cover page. Useful when concatenating with other PDFs as an appendix, or embedding into a larger document. |
-| `--open` | off | Open the produced PDF(s) with the OS default viewer after build |
+| `--output <path>` | derived | Override the output path. Extension must match `--format` (`.pdf` for `--format pdf`, `.docx` for `--format docx`). Ignored when `--all` is set or `--format both`. |
+| `--all` | off | Render every (theme × mode) combo for built-in themes (6 outputs per format; 12 with `--format both`). Ignores `--theme`, `--mode`, and `--output`. |
+| `--no-cover` | off | Suppress the cover page. Useful when concatenating with other docs as an appendix, or embedding into a larger document. |
+| `--open` | off | Open the produced file(s) with the OS default viewer after build. |
+| `--format pdf\|docx\|both` | `pdf` | Output format. `pdf` (default) preserves existing behavior. `docx` builds a Microsoft Word document via python-docx. `both` produces sibling PDF + DOCX in the same `.md-publisher/<ts>/` dir. The `default` theme is PDF-only (no per-mode palette/fonts data); use atlas/phosphor/arcade or a custom theme for DOCX. |
 
 ## Mermaid behavior
 

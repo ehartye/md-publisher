@@ -1,17 +1,29 @@
 # md-publisher
 
-A Claude Code plugin that turns markdown documents — with embedded mermaid diagrams — into themed, searchable, paged PDFs. Built on WeasyPrint after a four-toolchain bake-off (see `~/repos/md-publisher-bakeoff/` for the comparison).
+A Claude Code plugin that turns markdown documents — with embedded mermaid diagrams — into themed, searchable, paged PDFs *and* Microsoft Word DOCX. Built on WeasyPrint and python-docx after two structured toolchain bake-offs (see `~/repos/md-publisher-bakeoff/` for both rounds).
 
 ## What you get
 
-Four skills, six bundled themes, and a Python pipeline that produces print-ready PDFs with searchable mermaid text.
+Five skills, six bundled themes, and Python pipelines that produce print-ready PDFs and editable DOCX with searchable mermaid text.
 
 | Skill | What it does | Invoke as |
 |---|---|---|
-| **`publish`** | Turn a markdown file into a themed PDF. | `/md-publisher:publish doc.md [--theme atlas --mode light] [--all] [--open] [--no-cover]` |
+| **`publish`** | Turn a markdown file into a themed PDF or DOCX (or both). | `/md-publisher:publish doc.md [--theme atlas --mode light] [--format pdf\|docx\|both] [--all] [--open] [--no-cover]` |
 | **`preprocess`** | LLM-tag mermaid diagrams (`:::ingress / :::core / :::transform / :::bridge`) so themes color nodes by role. Rewrites the source in place; original gets backed up. | `/md-publisher:preprocess doc.md [--add-frontmatter]` |
 | **`theme-advisor`** | Interactive Q&A flow that produces a custom theme module under `~/.md-publisher/themes/<name>/`. | `/md-publisher:theme-advisor` |
 | **`theme-gallery`** | List, preview, and pick from built-in + user-installed themes in one combined view. | `/md-publisher:theme-gallery` |
+| **`install-fonts`** | Per-user install of the Google Fonts the bundled themes use (Newsreader, Sora, JetBrains Mono, IBM Plex Mono, Audiowide, Bungee, Recursive). Cross-platform; no admin required. Run once after first DOCX build to fix font substitution. | `/md-publisher:install-fonts [--theme atlas --mode dark] [--dry-run]` |
+
+## DOCX output
+
+`--format docx` (or `--format both`) produces a Microsoft Word `.docx` alongside or instead of the PDF. Same theme system, mostly-same fidelity. The DOCX path uses programmatic OOXML via python-docx for full control over page color, fonts, code-block syntax highlighting, and per-theme cover treatments.
+
+A few documented concessions vs the PDF version (see `~/repos/md-publisher-bakeoff/docx/DECISION.md` for context):
+- Mermaid is embedded as PNG (themed, but not searchable like the PDF SVG version).
+- Arcade's mono uses JetBrains Mono (Word can't reliably address Recursive's mono variation axis).
+- DOCX requires the theme fonts to be installed locally — Word substitutes when fonts are missing. Run `/md-publisher:install-fonts` once after first install.
+
+The `default` theme is PDF-only; use atlas/phosphor/arcade or a custom theme for DOCX.
 
 ## Themes
 
@@ -19,11 +31,13 @@ Six bundled themes (each in light + dark): **atlas** (corporate, customer-facing
 
 ## Output convention
 
-`<source-md-dir>/.md-publisher/<YYYYMMDD-HHMMSS>/<slug>.pdf` by default. Override with `--output <path>`. The same `.md-publisher/<timestamp>/` directory holds the backup of the original markdown when `preprocess` runs.
+`<source-md-dir>/.md-publisher/<YYYYMMDD-HHMMSS>/<slug>.<pdf|docx>` by default. Override with `--output <path>` (extension must match `--format`). With `--format both`, the PDF and DOCX share the same timestamp dir and slug. The same `.md-publisher/<timestamp>/` directory holds the backup of the original markdown when `preprocess` runs.
 
 ## First-run setup
 
-The first time any skill runs, the plugin bootstraps a Python venv and Node toolchain at `~/.md-publisher/runtime/`. This takes ~2 minutes (downloads ~250 MB total: WeasyPrint, Pygments, mermaid-cli, and Puppeteer's Chromium). Subsequent runs reuse the cache.
+The first time any skill runs, the plugin bootstraps a Python venv and Node toolchain at `~/.md-publisher/runtime/`. This takes ~2 minutes (downloads ~250 MB total: WeasyPrint, python-docx, Pygments, cairosvg, mermaid-cli, and Puppeteer's Chromium). Subsequent runs reuse the cache.
+
+If anything goes wrong with native dep loading (especially WeasyPrint/Cairo on macOS Homebrew installs), run `python <plugin-root>/runtime/bootstrap.py --doctor` for a platform-specific diagnostic with actionable install/fix instructions.
 
 **System dependency** that the bootstrap CANNOT install for you: a GTK 3 runtime (Pango / Cairo / GDK-Pixbuf), needed by WeasyPrint for native typography. On Windows the easiest source is Inkscape or GIMP (their bundled GTK works); on Linux `apt install libpango-1.0-0 libcairo2 libgdk-pixbuf2.0-0`; on macOS `brew install pango cairo gdk-pixbuf libffi`. The bootstrap probes for it and prints a clear error with install instructions if missing.
 
@@ -34,13 +48,20 @@ md-publisher/
 ├── .claude-plugin/plugin.json
 ├── README.md
 ├── skills/
-│   ├── publish/        SKILL.md + scripts/
+│   ├── publish/        SKILL.md + scripts/  (--format pdf|docx|both)
 │   ├── preprocess/     SKILL.md + scripts/
 │   ├── theme-advisor/  SKILL.md + scripts/
-│   └── theme-gallery/  SKILL.md + scripts/
-├── lib/                shared Python pipeline
-├── themes/             six built-in themes + theme-spec.json + pygments.css
-└── runtime/            bootstrap + dep manifests
+│   ├── theme-gallery/  SKILL.md + scripts/
+│   └── install-fonts/  SKILL.md + scripts/  (cross-platform Google Fonts installer)
+├── lib/                shared Python pipelines
+│   ├── pipeline.py         WeasyPrint PDF pipeline
+│   ├── docx_pipeline.py    python-docx DOCX pipeline (orchestration entry)
+│   ├── docx_*.py           DOCX components (styles, renderer, cover, syntax, toc)
+│   ├── theme_loader.py     theme resolution + Palette/Fonts dataclasses
+│   ├── font_install.py     cross-platform per-user font install
+│   └── ...
+├── themes/             six built-in themes + theme-spec.json + pygments{,-dark}.css
+└── runtime/            bootstrap (with --doctor mode) + dep manifests
 ```
 
 User-data lives at `~/.md-publisher/`:
@@ -82,6 +103,39 @@ python <plugin-root>/skills/publish/scripts/publish.py <some-doc.md>
 A successful run writes `<some-doc-dir>/.md-publisher/<timestamp>/<slug>.pdf` and prints the path. If you don't have a test markdown handy, the bake-off corpus at `~/repos/md-publisher-bakeoff/corpus/transformers-explainer.md` (if present from the project's research history) is a known-good 6-page input with mermaid diagrams.
 
 ## Troubleshooting
+
+For native-dep loading problems (Pango / Cairo / GDK-Pixbuf, mmdc, font dir), run:
+
+```
+python <plugin-root>/runtime/bootstrap.py --doctor
+```
+
+`--doctor` actually exercises each native dep (full PDF write, cairosvg rasterize, mmdc --version, font-dir write probe) instead of just checking that the file exists, then prints platform-specific recovery instructions. Common cases:
+
+### macOS — WeasyPrint can't find Pango/Cairo despite `brew install pango cairo`
+
+The dynamic loader doesn't search Homebrew's prefix by default on Apple Silicon. The plugin auto-detects `brew --prefix` and prepends `<prefix>/lib` to `DYLD_LIBRARY_PATH` at runtime (see `lib/gtk_loader.py::_ensure_macos_dyld_path`). If you still see `OSError: cannot load library 'libpango-1.0-0.dylib'`, run `--doctor` to confirm brew-prefix detection worked, and add to your shell rc as a permanent fix:
+
+```bash
+# Apple Silicon (M-series)
+export DYLD_LIBRARY_PATH="/opt/homebrew/lib:$DYLD_LIBRARY_PATH"
+# Intel macOS
+export DYLD_LIBRARY_PATH="/usr/local/lib:$DYLD_LIBRARY_PATH"
+```
+
+### Linux — Pango/Cairo missing entirely
+
+```bash
+sudo apt install libpango-1.0-0 libcairo2 libgdk-pixbuf2.0-0 libffi-dev   # Debian/Ubuntu
+sudo dnf install pango cairo gdk-pixbuf2 libffi                            # Fedora/RHEL
+sudo pacman -S pango cairo gdk-pixbuf2 libffi                              # Arch
+```
+
+### Windows — GTK 3 runtime not found
+
+Install Inkscape (https://inkscape.org) or GIMP — they bundle a complete GTK3 stack the plugin auto-detects. Or install [GTK3 Runtime](https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer) directly. If GTK lives somewhere unusual, set `WEASYPRINT_DLL_DIR=<gtk-bin-dir>`.
+
+### Other symptoms
 
 | Symptom | Cause | Fix |
 |---|---|---|

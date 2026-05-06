@@ -3,10 +3,10 @@
 
   "name": "md-publisher",
   "displayName": "md-publisher",
-  "description": "Turn markdown documents (with embedded mermaid diagrams) into themed, searchable, paged PDFs via WeasyPrint. Bundles four skills (publish, preprocess, theme-advisor, theme-gallery) plus six built-in themes (atlas/phosphor/arcade in light + dark) and a default editorial theme.",
-  "longDescription": "md-publisher is the WeasyPrint-based winner of a four-toolchain bake-off. It produces print-ready PDFs from any markdown document, with full mermaid support — diagram node labels survive as searchable text in the final PDF (Ctrl+F finds them). Themes are interchangeable per (theme, mode), and a custom theme can be created interactively via the theme-advisor skill in under 5 minutes.\n\nIncludes: page covers with title/subtitle/author/date derived from YAML front matter or first h1; auto-resize for oversized mermaid diagrams; per-node coloring via universal `:::ingress / :::core / :::transform / :::bridge` tags; separate user-themes directory under `~/.md-publisher/themes/` so customizations persist across plugin updates.",
+  "description": "Turn markdown documents (with embedded mermaid) into themed, searchable, paged PDFs and Microsoft Word DOCX files via WeasyPrint and python-docx. 5 skills (publish, preprocess, theme-advisor, theme-gallery, install-fonts) + 6 bundled themes (atlas/phosphor/arcade in light + dark) + interactive custom-theme creation",
+  "longDescription": "md-publisher is the WeasyPrint-based winner of a four-toolchain bake-off, now extended with a full DOCX pipeline (winner of a separate three-toolchain DOCX bake-off). It produces print-ready PDFs and editable Word documents from any markdown source, with full mermaid support — diagram node labels survive as searchable text in both formats (Ctrl+F finds them). Themes are interchangeable per (theme, mode) across both outputs, and a custom theme can be created interactively via the theme-advisor skill in under 5 minutes.\n\nIncludes: page covers with title/subtitle/author/date derived from YAML front matter or first h1; auto-resize for oversized mermaid diagrams; per-node coloring via universal `:::ingress / :::core / :::transform / :::bridge` tags; per-platform font detection + install via the install-fonts skill so DOCX output renders identically to PDF; separate user-themes directory under `~/.md-publisher/themes/` so customizations persist across plugin updates.",
 
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": {
     "name": "Eric Hartye",
     "email": "eric@hartye.com"
@@ -17,7 +17,10 @@
   "tags": [
     "markdown",
     "pdf",
+    "docx",
+    "word",
     "weasyprint",
+    "python-docx",
     "mermaid",
     "publishing",
     "themes",
@@ -30,10 +33,11 @@
   "installFrom": "github:<your-account>/md-publisher",
 
   "skills": [
-    { "name": "publish",        "summary": "Render markdown to a themed PDF" },
+    { "name": "publish",        "summary": "Render markdown to a themed PDF or DOCX (or both)" },
     { "name": "preprocess",     "summary": "LLM-tag mermaid diagrams for theme-aware coloring" },
     { "name": "theme-advisor",  "summary": "Interactive Q&A flow that creates a custom theme" },
-    { "name": "theme-gallery",  "summary": "List + preview built-in and user-installed themes" }
+    { "name": "theme-gallery",  "summary": "List + preview built-in and user-installed themes" },
+    { "name": "install-fonts",  "summary": "Per-platform detect + install of theme fonts so DOCX renders identically to PDF" }
   ],
 
   "requirements": {
@@ -44,5 +48,5 @@
     ]
   },
 
-  "firstRunBehavior": "On first invocation of any skill, the plugin auto-installs a Python venv (WeasyPrint, markdown, Pygments) and Node deps (mermaid-cli + Puppeteer Chromium) to ~/.md-publisher/runtime/. Takes ~2 minutes; downloads ~250 MB; subsequent runs reuse the cache."
+  "firstRunBehavior": "On first invocation of any skill, the plugin auto-installs a Python venv (WeasyPrint, markdown, Pygments, Pillow, python-docx, markdown-it-py, cairosvg, pytest) and Node deps (mermaid-cli + Puppeteer Chromium) to ~/.md-publisher/runtime/. Takes ~2 minutes; downloads ~250 MB; subsequent runs reuse the cache."
 }

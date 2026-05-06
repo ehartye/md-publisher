@@ -23,7 +23,7 @@ from .gtk_loader import register_gtk_runtime
 from .mermaid_processor import (
     MermaidExtension, MermaidPostprocessor, find_mmdc,
 )
-from .theme_loader import ThemeSelection, build_classdefs
+from .theme_loader import ThemeSelection, build_classdefs, pygments_css_path
 from .toc import assign_heading_ids, render_toc
 
 
@@ -323,7 +323,9 @@ def build_pdf(
 
     print("[5/6] assembling HTML document")
     print_css = css_path.read_text(encoding="utf-8")
-    pygments_css = (runtime.plugin_root() / "themes" / "pygments.css").read_text(encoding="utf-8")
+    # Mode-aware syntax-highlight palette via the shared helper so PDF +
+    # DOCX pipelines stay in sync — see lib.theme_loader.pygments_css_path.
+    pygments_css = pygments_css_path(theme_selection).read_text(encoding="utf-8")
     title = cover_title  # already derived above; consistent with cover
 
     if include_cover:

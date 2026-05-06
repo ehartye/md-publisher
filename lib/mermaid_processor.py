@@ -76,15 +76,26 @@ class MermaidPreprocessor(Preprocessor):
 
     def __init__(self, md: Markdown, mmdc_path: Path, build_dir: Path,
                  mermaid_config: Path, puppeteer_config: Path,
-                 classdef_lines: list[str] | None = None):
+                 classdef_lines: list[str] | None = None,
+                 *, output_format: str = "svg"):
         super().__init__(md)
+        if output_format not in ("svg", "png", "dual"):
+            raise ValueError(
+                f"output_format must be svg|png|dual, got {output_format!r}"
+            )
         self.mmdc_path = mmdc_path
         self.build_dir = build_dir
         self.mermaid_config = mermaid_config
         self.puppeteer_config = puppeteer_config
         self.classdef_lines = list(classdef_lines or [])
+        # "svg" — inline SVG into <figure> for WeasyPrint (default, PDF path).
+        # "png" — emit a placeholder <img class="mermaid-png" src=...> for the
+        #         DOCX renderer to extract and embed via python-docx.
+        # "dual" — render SVG via mmdc + emit a marker the docx renderer
+        #          recognizes; cairosvg-based rasterize-to-PNG lands in Task 3.2.
+        self.output_format = output_format
         # populated as fences are found; keyed by placeholder, value is
-        # the literal <figure>...</figure> HTML to splice back in
+        # the literal <figure>...</figure> HTML to splice back in (SVG mode)
         self.figures: dict[str, str] = {}
         self.build_dir.mkdir(parents=True, exist_ok=True)
 
@@ -124,11 +135,50 @@ class MermaidPreprocessor(Preprocessor):
 
         digest = hashlib.sha256(render_source.encode("utf-8")).hexdigest()[:16]
         mmd_path = self.build_dir / f"{digest}.mmd"
-        svg_path = self.build_dir / f"{digest}.svg"
 
+        if self.output_format == "png":
+            png_path = self.build_dir / f"{digest}.png"
+            if not png_path.exists():
+                mmd_path.write_text(render_source, encoding="utf-8")
+                self._invoke_mmdc(mmd_path, png_path, fmt="png")
+            # PNG path is for DOCX consumers. Route through the same
+            # placeholder/figures-dict roundtrip as SVG mode so the
+            # postprocessor unwraps any <p>...</p> markdown wraps around
+            # us — keeps PNG and SVG modes structurally identical from
+            # the consumer's perspective (no surprise <p> wrapper to
+            # work around in the docx renderer's HTML walker).
+            img_html = f"<img class='mermaid-png' src='{png_path.as_uri()}' />"
+            placeholder = f"{PLACEHOLDER_PREFIX}{digest}"
+            self.figures[placeholder] = img_html
+            return placeholder
+
+        if self.output_format == "dual":
+            # Render SVG once via mmdc; rasterize to PNG via cairosvg in
+            # Task 3.2. For Phase 1 we emit a marker carrying the SVG path;
+            # the docx renderer's dual-embed branch reads it and synthesizes
+            # the PNG companion when 3.2 lands.
+            #
+            # Dual-mode HTML is DOCX-only — never feed to a browser/PDF
+            # renderer. The empty src='' on the rendered <img> is intentional:
+            # makes accidental misuse fail visibly (broken-image icon)
+            # rather than silently render nothing.
+            svg_path = self.build_dir / f"{digest}.svg"
+            if not svg_path.exists():
+                mmd_path.write_text(render_source, encoding="utf-8")
+                self._invoke_mmdc(mmd_path, svg_path, fmt="svg")
+            img_html = (
+                f"<img class='mermaid-dual' src='' "
+                f"data-svg='{svg_path.as_uri()}' />"
+            )
+            placeholder = f"{PLACEHOLDER_PREFIX}{digest}"
+            self.figures[placeholder] = img_html
+            return placeholder
+
+        # output_format == "svg" (default — PDF path).
+        svg_path = self.build_dir / f"{digest}.svg"
         if not svg_path.exists():
             mmd_path.write_text(render_source, encoding="utf-8")
-            self._invoke_mmdc(mmd_path, svg_path)
+            self._invoke_mmdc(mmd_path, svg_path, fmt="svg")
 
         svg = svg_path.read_text(encoding="utf-8")
         cleaned_svg = self._strip_explicit_dimensions(svg)
@@ -144,8 +194,10 @@ class MermaidPreprocessor(Preprocessor):
         self.figures[placeholder] = figure_html
         return placeholder
 
-    def _invoke_mmdc(self, mmd_path: Path, svg_path: Path) -> None:
-        """Run mmdc to convert .mmd -> .svg via `node <mmdc-cli.js>`.
+    def _invoke_mmdc(
+        self, mmd_path: Path, out_path: Path, *, fmt: str = "svg",
+    ) -> None:
+        """Run mmdc to convert .mmd to .svg or .png via `node <mmdc-cli.js>`.
 
         We invoke node directly against mmdc's source entry point rather
         than going through the .cmd shim. This avoids:
@@ -158,16 +210,22 @@ class MermaidPreprocessor(Preprocessor):
         --configFile passes mermaid theme/layout knobs; --puppeteerConfigFile
         passes Chromium launch args (sandbox enabled by default; see
         runtime.puppeteer_config()).
+
+        mmdc detects output format from `out_path`'s extension. PNG mode
+        adds `-s 3` for HiDPI rendering (needed for DOCX print-quality
+        embedding); SVG mode does not need it because the output is vector.
         """
         cmd = [
             "node",
             str(self.mmdc_path),
             "-i", str(mmd_path),
-            "-o", str(svg_path),
+            "-o", str(out_path),
             "-b", "transparent",
             "--configFile", str(self.mermaid_config),
             "--puppeteerConfigFile", str(self.puppeteer_config),
         ]
+        if fmt == "png":
+            cmd += ["-s", "3"]
         result = subprocess.run(cmd, capture_output=True, text=True)
         if result.returncode != 0:
             sys.stderr.write(
@@ -176,8 +234,8 @@ class MermaidPreprocessor(Preprocessor):
                 f"stderr: {result.stderr}\n"
             )
             raise RuntimeError(f"mmdc returned exit code {result.returncode}")
-        if not svg_path.exists():
-            raise RuntimeError(f"mmdc reported success but {svg_path} is missing")
+        if not out_path.exists():
+            raise RuntimeError(f"mmdc reported success but {out_path} is missing")
 
     @staticmethod
     def _strip_explicit_dimensions(svg: str) -> str:
@@ -327,13 +385,15 @@ class MermaidExtension(Extension):
 
     def __init__(self, mmdc_path: Path, build_dir: Path,
                  mermaid_config: Path, puppeteer_config: Path,
-                 classdef_lines: list[str] | None = None):
+                 classdef_lines: list[str] | None = None,
+                 *, output_format: str = "svg"):
         super().__init__()
         self.mmdc_path = mmdc_path
         self.build_dir = build_dir
         self.mermaid_config = mermaid_config
         self.puppeteer_config = puppeteer_config
         self.classdef_lines = list(classdef_lines or [])
+        self.output_format = output_format
         self.preprocessor: MermaidPreprocessor | None = None
 
     def extendMarkdown(self, md: Markdown) -> None:
@@ -341,6 +401,7 @@ class MermaidExtension(Extension):
             md, self.mmdc_path, self.build_dir,
             self.mermaid_config, self.puppeteer_config,
             classdef_lines=self.classdef_lines,
+            output_format=self.output_format,
         )
         # Priority 50 puts us before fenced_code (priority 25). Higher
         # priority preprocessors run first.

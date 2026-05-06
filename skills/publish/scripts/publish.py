@@ -1,13 +1,16 @@
 #!/usr/bin/env python
 """Build entry point for the md-publisher publish skill.
 
-Resolves a theme, runs the WeasyPrint pipeline, optionally opens the
-result. Bootstraps the runtime on first invocation if needed.
+Resolves a theme, runs the WeasyPrint or DOCX pipeline (or both),
+optionally opens the result. Bootstraps the runtime on first invocation
+if needed.
 
 Invocation patterns:
     publish.py source.md
     publish.py source.md --theme atlas --mode dark
-    publish.py source.md --all
+    publish.py source.md --format docx
+    publish.py source.md --format both
+    publish.py source.md --all --format both
     publish.py source.md --output out.pdf --open
 """
 
@@ -39,6 +42,16 @@ def venv_python() -> Path:
     if sys.platform == "win32":
         return RUNTIME_DIR / ".venv" / "Scripts" / "python.exe"
     return RUNTIME_DIR / ".venv" / "bin" / "python"
+
+
+def _ts_now() -> str:
+    """Filesystem-safe local timestamp (mirror of lib/output_paths.timestamp).
+
+    Computed in the parent process so all child runner calls in one
+    invocation share the same `.md-publisher/<ts>/` directory.
+    """
+    import datetime
+    return datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 
 
 def is_bootstrapped() -> bool:
@@ -75,6 +88,8 @@ def run_one_build(
     source: Path,
     theme: str,
     mode: str | None,
+    fmt: str,
+    ts: str | None,
     explicit_output: Path | None,
     include_cover: bool,
     open_after: bool,
@@ -82,9 +97,10 @@ def run_one_build(
     """Invoke the venv's Python to run a single build, return output path.
 
     The actual build runs inside the bootstrapped venv (it has WeasyPrint
-    + Pygments + markdown). We hand it a JSON job document on stdin via
-    `_runner.py` so no user-supplied string is ever interpolated into a
-    Python source string — the job dict is passed structurally end-to-end.
+    + Pygments + markdown + python-docx). We hand it a JSON job document
+    on stdin via `_runner.py` so no user-supplied string is ever
+    interpolated into a Python source string — the job dict is passed
+    structurally end-to-end.
     """
     runner_script = Path(__file__).resolve().parent / "_runner.py"
     job = {
@@ -92,6 +108,8 @@ def run_one_build(
         "source":          str(source),
         "theme":           theme,
         "mode":            mode,
+        "format":          fmt,
+        "ts":              ts,
         "explicit_output": str(explicit_output) if explicit_output else None,
         "include_cover":   include_cover,
     }
@@ -116,6 +134,34 @@ def run_one_build(
     return output_path
 
 
+def _formats_from_arg(fmt_arg: str) -> list[str]:
+    """'pdf' | 'docx' -> ['pdf'] / ['docx'];  'both' -> ['pdf', 'docx']."""
+    return ["pdf", "docx"] if fmt_arg == "both" else [fmt_arg]
+
+
+def _validate_explicit_output(args) -> int | None:
+    """Sanity-check `--output` extension against `--format`. Returns exit
+    code on error, else None."""
+    if args.output is None or args.all:
+        return None
+    if args.format == "both":
+        sys.stderr.write(
+            "[publish] --output cannot be combined with --format=both "
+            "(use the default .md-publisher/<ts>/ convention so PDF and "
+            "DOCX land alongside each other)\n"
+        )
+        return 2
+    ext = args.output.suffix.lower()
+    expected = "." + args.format
+    if ext != expected:
+        sys.stderr.write(
+            f"[publish] --output {args.output} must have {expected} "
+            f"extension when --format={args.format}\n"
+        )
+        return 2
+    return None
+
+
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     p.add_argument("source", type=Path, help="path to source markdown")
@@ -125,11 +171,13 @@ def main() -> int:
     p.add_argument("--output", type=Path, default=None,
                    help="explicit output PDF path (overrides .md-publisher/<ts>/ default)")
     p.add_argument("--all", action="store_true",
-                   help="render every built-in (theme x mode) — 6 PDFs")
+                   help="render every built-in (theme x mode) — 6 PDFs (or 12 with --format both)")
     p.add_argument("--no-cover", action="store_true",
                    help="suppress the cover page")
     p.add_argument("--open", action="store_true",
                    help="open the produced PDF(s) with the OS default viewer")
+    p.add_argument("--format", default="pdf", choices=["pdf", "docx", "both"],
+                   help="output format: pdf (default — current behavior), docx, or both")
     args = p.parse_args()
 
     src = args.source.resolve()
@@ -142,27 +190,39 @@ def main() -> int:
         if rc != 0:
             return rc
 
+    rc = _validate_explicit_output(args)
+    if rc is not None:
+        return rc
+
     include_cover = not args.no_cover
+    formats = _formats_from_arg(args.format)
     outputs: list[Path] = []
+
+    # Single timestamp shared across every output of this invocation, so
+    # --format both (and --all --format both) put sibling files into one
+    # `.md-publisher/<ts>/` dir instead of scattering across several.
+    ts = _ts_now()
 
     if args.all:
         if args.output:
             sys.stderr.write("[publish] --output ignored when --all is set\n")
         for theme, mode in ALL_BUILTIN_VARIANTS:
-            print(f"\n=== {theme}-{mode} ===")
-            outputs.append(run_one_build(
-                source=src, theme=theme, mode=mode,
-                explicit_output=None, include_cover=include_cover,
-                open_after=args.open,
-            ))
+            for fmt in formats:
+                print(f"\n=== {theme}-{mode} ({fmt}) ===")
+                outputs.append(run_one_build(
+                    source=src, theme=theme, mode=mode, fmt=fmt, ts=ts,
+                    explicit_output=None, include_cover=include_cover,
+                    open_after=args.open,
+                ))
     else:
         # Default theme has no mode; pass None so it resolves to themes/default/
         mode = None if args.theme == "default" else args.mode
-        outputs.append(run_one_build(
-            source=src, theme=args.theme, mode=mode,
-            explicit_output=args.output, include_cover=include_cover,
-            open_after=args.open,
-        ))
+        for fmt in formats:
+            outputs.append(run_one_build(
+                source=src, theme=args.theme, mode=mode, fmt=fmt, ts=ts,
+                explicit_output=args.output, include_cover=include_cover,
+                open_after=args.open,
+            ))
 
     print("\n[publish] done. Outputs:")
     for path in outputs:
