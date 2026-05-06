@@ -229,12 +229,40 @@ def _palette_from_user_spec(block: dict) -> Palette:
 
 
 def _fonts_from_user_spec(block: dict) -> Fonts:
+    """Read a single-theme spec.json's fonts block.
+
+    Tolerates two shapes per role:
+      - bare string:  `"serif": "Newsreader"`                  (v0.2+ scaffold)
+      - dict wrapper: `"serif": {"family": "Newsreader", ...}` (pre-v0.2
+                     bake-off shape; theme-spec.json's per-family fonts
+                     blocks use this with optional weight/opsz siblings)
+    Anything else falls back to a system-stack default rather than
+    propagating a non-string into ThemeSelection.fonts.X (which would
+    crash callers like python-docx's Font.name setter or .lower() casts).
+    """
     return Fonts(
-        serif=block.get("serif", "serif"),
-        sans=block.get("sans", "sans-serif"),
-        mono=block.get("mono", "monospace"),
-        display=block.get("display", block.get("serif", "serif")),
+        serif=_read_font(block.get("serif"), default="serif"),
+        sans=_read_font(block.get("sans"), default="sans-serif"),
+        mono=_read_font(block.get("mono"), default="monospace"),
+        display=_read_font(
+            block.get("display", block.get("serif")), default="serif"
+        ),
     )
+
+
+def _read_font(value, *, default: str) -> str:
+    """Unwrap legacy {family: 'X'} font specs to bare 'X'; pass strings through.
+
+    Returns `default` for anything else (None, bool, list, dict-without-family).
+    Used by `_fonts_from_user_spec` to absorb the schema drift between v0.2's
+    bare-string convention and the bake-off's dict wrapper.
+    """
+    if isinstance(value, str):
+        return value
+    if isinstance(value, dict):
+        family = value.get("family")
+        return family if isinstance(family, str) else default
+    return default
 
 
 @dataclass(frozen=True)
