@@ -23,7 +23,7 @@ from .gtk_loader import register_gtk_runtime
 from .mermaid_processor import (
     MermaidExtension, MermaidPostprocessor, find_mmdc,
 )
-from .theme_loader import ThemeSelection, build_classdefs
+from .theme_loader import ThemeSelection, build_classdefs, pygments_css_path
 from .toc import assign_heading_ids, render_toc
 
 
@@ -323,17 +323,9 @@ def build_pdf(
 
     print("[5/6] assembling HTML document")
     print_css = css_path.read_text(encoding="utf-8")
-    # Mode-aware syntax-highlight palette: dark themes get monokai-derived
-    # colors so code blocks remain legible on dark backgrounds. Falls back
-    # to the light file if the dark file is absent (forward-compat for
-    # themes installed before pygments-dark.css shipped).
-    themes_dir = runtime.plugin_root() / "themes"
-    pygments_path = themes_dir / "pygments.css"
-    if theme_selection.mode == "dark":
-        dark_path = themes_dir / "pygments-dark.css"
-        if dark_path.exists():
-            pygments_path = dark_path
-    pygments_css = pygments_path.read_text(encoding="utf-8")
+    # Mode-aware syntax-highlight palette via the shared helper so PDF +
+    # DOCX pipelines stay in sync — see lib.theme_loader.pygments_css_path.
+    pygments_css = pygments_css_path(theme_selection).read_text(encoding="utf-8")
     title = cover_title  # already derived above; consistent with cover
 
     if include_cover:

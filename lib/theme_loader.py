@@ -342,6 +342,24 @@ def resolve_selection(
     )
 
 
+def pygments_css_path(selection: ThemeSelection) -> Path:
+    """Return the right Pygments stylesheet for this selection's mode.
+
+    Both pipelines (PDF via lib.pipeline, DOCX via lib.docx_syntax) need
+    the same mode -> file mapping; centralizing it here means renaming
+    the dark file or adding a third style only updates one place.
+
+    Falls back to the light file when the dark file isn't installed —
+    forward-compat for users mid-upgrade.
+    """
+    themes_dir = runtime.plugin_root() / "themes"
+    if selection.mode == "dark":
+        dark = themes_dir / "pygments-dark.css"
+        if dark.exists():
+            return dark
+    return themes_dir / "pygments.css"
+
+
 def build_classdefs(selection: ThemeSelection) -> list[str]:
     """Build mermaid `classDef <tag> <props>` lines for the four universal tags.
 
