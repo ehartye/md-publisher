@@ -1,6 +1,6 @@
 {
   "name": "md-publisher",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Turn markdown documents (with embedded mermaid diagrams) into themed, searchable, paged PDFs and Microsoft Word DOCX files via WeasyPrint and python-docx. Bundles five skills (publish, preprocess, theme-advisor, theme-gallery, install-fonts) plus six built-in themes (atlas/phosphor/arcade in light + dark).",
   "author": {
     "name": "Eric Hartye",
