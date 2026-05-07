@@ -254,7 +254,7 @@ MERMAID_CONFIG_TEMPLATE = {
         "nodeBorder": "{{ink_soft}}",
         "nodeTextColor": "{{ink}}",
         "edgeLabelBackground": "{{paper}}",
-        "clusterBkg": "{{code_bg}}",
+        "clusterBkg": "{{accent_soft}}",
         "clusterBorder": "{{rule}}",
         # Sequence diagram
         "actorBkg": "{{paper}}",
@@ -271,12 +271,12 @@ MERMAID_CONFIG_TEMPLATE = {
         "labelTextColor": "{{ink}}",
         # State diagram
         "labelColor": "{{ink}}",
-        "altBackground": "{{code_bg}}",
+        "altBackground": "{{accent_soft}}",
         # Class diagram
         "classText": "{{ink}}",
         # ER diagram
         "attributeBackgroundColorEven": "{{paper}}",
-        "attributeBackgroundColorOdd": "{{code_bg}}",
+        "attributeBackgroundColorOdd": "{{accent_soft}}",
         # Pie chart — 8 slices cycling accent variations
         "pie1": "{{accent}}",
         "pie2": "{{ink_soft}}",
@@ -290,7 +290,7 @@ MERMAID_CONFIG_TEMPLATE = {
         "pieTitleTextColor": "{{ink}}",
         "pieLegendTextColor": "{{ink}}",
         # Gantt
-        "sectionBkgColor": "{{code_bg}}",
+        "sectionBkgColor": "{{accent_soft}}",
         "sectionBkgColor2": "{{paper}}",
         "taskBkgColor": "{{accent_soft}}",
         "activeTaskBkgColor": "{{accent}}",
@@ -376,6 +376,11 @@ PREVIEW_HTML_TEMPLATE = """<!doctype html>
 <style>
 {{style_css_inline}}
 .preview-page { width: 7in; margin: 1in auto; background: var(--bg); padding: 1in; }
+.mermaid-fig { margin: 1.5em 0; padding: 0.5em; background: var(--paper); border: 1px solid var(--rule); border-radius: 4px; }
+.mermaid-fig figcaption { font-family: var(--font-sans); font-size: 9pt; color: var(--ink-soft); margin-top: 0.4em; text-align: center; }
+.mermaid-fig svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+.mermaid-source { font-family: var(--font-mono); font-size: 0.8em; background: var(--code-bg); padding: 0.5em; overflow-x: auto; }
+.mermaid-fallback-note { font-family: var(--font-sans); font-size: 8pt; color: var(--ink-soft); font-style: italic; }
 </style></head>
 <body><div class="preview-page">
 <h1>{{display_name}}</h1>
@@ -386,6 +391,21 @@ PREVIEW_HTML_TEMPLATE = """<!doctype html>
     return "code block"</code></pre>
 <table><thead><tr><th>Column</th><th>Column</th></tr></thead>
 <tbody><tr><td>Row data</td><td>More data</td></tr></tbody></table>
+
+<h2>Diagram preview</h2>
+<figure class="mermaid-fig">
+{{flowchart_figure}}
+<figcaption>Flowchart with classDef tags</figcaption>
+</figure>
+<figure class="mermaid-fig">
+{{er_figure}}
+<figcaption>ER diagram (themed via mermaid-config)</figcaption>
+</figure>
+<figure class="mermaid-fig">
+{{class_figure}}
+<figcaption>Class diagram with <code>:::ingress</code> header tag</figcaption>
+</figure>
+
 <p style="margin-top: 1em; font-family: var(--font-sans); font-size: 9pt; color: var(--ink-soft);">
 &mdash; {{display_name}} &middot; theme preview</p>
 </div></body></html>
@@ -402,6 +422,111 @@ def substitute(template: str, values: dict) -> str:
 def first_family(stack: str) -> str:
     """'Charter, Georgia, serif' -> 'Charter'"""
     return stack.split(",")[0].strip().strip('"').strip("'")
+
+
+# Sample diagram sources used in preview.html. Each should render with the
+# theme applied so the author can verify ER alternating rows, classDiagram
+# header tagging, and the four flowchart classDef colors before publishing.
+
+PREVIEW_FLOWCHART = """flowchart LR
+    classDef ingress   {{ingress_classdef}}
+    classDef core      {{core_classdef}}
+    classDef transform {{transform_classdef}}
+    classDef bridge    {{bridge_classdef}}
+    A[Input]:::ingress --> B[Validate]:::transform
+    B --> C[Process]:::core
+    C --> D{Decision}:::bridge
+    D --> E[Output]:::ingress
+"""
+
+PREVIEW_ER = """erDiagram
+    CUSTOMER {
+        string id PK
+        string name
+        string email
+    }
+    ORDER {
+        string id PK
+        string customer_id FK
+        decimal total
+        date placed_at
+    }
+    CUSTOMER ||--o{ ORDER : places
+"""
+
+PREVIEW_CLASS = """classDiagram
+    class Engine:::ingress {
+        +run()
+        +stop()
+    }
+    class Worker {
+        +process(task)
+    }
+    class Queue {
+        +enqueue(item)
+        +dequeue() item
+    }
+    Engine --> Queue
+    Engine --> Worker
+    Worker --> Queue
+"""
+
+
+def _classdef_props(style: dict) -> str:
+    """Render a tagStyling style dict into a mermaid classDef rhs string."""
+    parts = []
+    for k, v in style.items():
+        if k == "strokeWidth":
+            parts.append(f"stroke-width:{v}")
+        elif k == "strokeDasharray":
+            parts.append(f"stroke-dasharray:{v}")
+        else:
+            parts.append(f"{k}:{v}")
+    return ",".join(parts)
+
+
+def _render_mermaid_to_svg(mermaid_src: str, mermaid_config_path: Path,
+                           build_dir: Path, mmdc_path: Path) -> str | None:
+    """Render a mermaid source via mmdc; return SVG string, or None on failure.
+
+    Failures (mmdc missing, render error, timeout) return None so the caller
+    can fall back to embedding the source. Preview rendering is non-blocking —
+    the theme files are still produced regardless.
+    """
+    import subprocess as _sp
+    if not mmdc_path.exists():
+        return None
+    src_path = build_dir / "preview.mmd"
+    out_path = build_dir / "preview.svg"
+    src_path.write_text(mermaid_src, encoding="utf-8")
+    try:
+        _sp.run(
+            ["node", str(mmdc_path),
+             "-i", str(src_path), "-o", str(out_path),
+             "-c", str(mermaid_config_path),
+             "-b", "transparent"],
+            check=True, capture_output=True, timeout=30,
+        )
+    except (_sp.CalledProcessError, _sp.TimeoutExpired, FileNotFoundError):
+        return None
+    if not out_path.exists():
+        return None
+    return out_path.read_text(encoding="utf-8")
+
+
+def _render_preview_figure(mermaid_src: str, mermaid_config_path: Path,
+                           build_dir: Path, mmdc_path: Path) -> str:
+    """Render `mermaid_src` via mmdc; on failure, return a fallback HTML block."""
+    svg = _render_mermaid_to_svg(mermaid_src, mermaid_config_path, build_dir, mmdc_path)
+    if svg:
+        # Strip any leading XML declaration; we're inlining
+        return re.sub(r"^<\?xml[^>]*\?>\s*", "", svg)
+    escaped = mermaid_src.replace("&", "&amp;").replace("<", "&lt;")
+    return (
+        f'<pre class="mermaid-source">{escaped}</pre>'
+        f'<p class="mermaid-fallback-note">'
+        f'(install runtime then re-scaffold to see live diagrams)</p>'
+    )
 
 
 def main() -> int:
@@ -534,14 +659,42 @@ def main() -> int:
         json.dumps(persisted, indent=2), encoding="utf-8"
     )
 
-    # Preview HTML — uses the same generated style.css inline. font_body_first
-    # follows the same body→display→"serif" fallback chain as spec.json
-    # serif so a spec with only `display` doesn't show a degraded preview.
+    # Preview HTML — renders three mermaid figures (flowchart, ER, class)
+    # using mmdc so the author can verify diagram styling before publishing.
+    # Falls back to source blocks if the mmdc runtime isn't bootstrapped.
+    mmdc_path = (
+        Path.home() / ".md-publisher" / "runtime" / "node_modules"
+        / "@mermaid-js" / "mermaid-cli" / "src" / "cli.js"
+    )
+    build_dir = target / ".preview-build"
+    build_dir.mkdir(exist_ok=True)
+    mermaid_config_path = target / "mermaid-config.json"
+
+    flowchart_src = substitute(PREVIEW_FLOWCHART, {
+        "ingress_classdef":   _classdef_props(spec["mermaid"]["tagStyling"]["ingress"]),
+        "core_classdef":      _classdef_props(spec["mermaid"]["tagStyling"]["core"]),
+        "transform_classdef": _classdef_props(spec["mermaid"]["tagStyling"]["transform"]),
+        "bridge_classdef":    _classdef_props(spec["mermaid"]["tagStyling"]["bridge"]),
+    })
+    flowchart_figure = _render_preview_figure(flowchart_src, mermaid_config_path, build_dir, mmdc_path)
+    er_figure = _render_preview_figure(PREVIEW_ER, mermaid_config_path, build_dir, mmdc_path)
+    class_figure = _render_preview_figure(PREVIEW_CLASS, mermaid_config_path, build_dir, mmdc_path)
+
+    # Cleanup the build dir; failures here are non-fatal.
+    import shutil
+    try:
+        shutil.rmtree(build_dir)
+    except OSError:
+        pass
+
     preview_subs = {
         **style_subs,
         "tagline": tagline,
         "font_body_first": first_family(body),
         "style_css_inline": style_css,
+        "flowchart_figure": flowchart_figure,
+        "er_figure":        er_figure,
+        "class_figure":     class_figure,
     }
     preview_html = substitute(PREVIEW_HTML_TEMPLATE, preview_subs)
     (target / "preview.html").write_text(preview_html, encoding="utf-8")
