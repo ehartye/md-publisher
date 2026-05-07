@@ -2,7 +2,7 @@
   "theme": "base",
   "themeVariables": {
     "background": "#FFFFFF",
-    "primaryColor": "#FFFFFF",
+    "primaryColor": "#DDD3C1",
     "primaryTextColor": "#0F1620",
     "primaryBorderColor": "#4A5568",
     "secondaryColor": "#F4ECDB",

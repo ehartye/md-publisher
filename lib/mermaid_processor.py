@@ -278,26 +278,37 @@ class MermaidPreprocessor(Preprocessor):
             return None
 
     def _inject_nodelabel_color(self, svg: str) -> str:
-        """Inject .nodeLabel { color } into SVGs using foreignObject.
+        """Inject inline color on foreignObject HTML content.
 
         Mermaid's ER/class/state diagrams use <foreignObject> with HTML
-        <span class="nodeLabel"> for text. Unlike SVG <text> elements
-        (which use fill), HTML elements need an explicit CSS color property.
-        Without it, text inherits browser default (black) which may be
-        invisible on dark backgrounds, or WeasyPrint may render it wrong.
+        <span class="nodeLabel"> for text. WeasyPrint does NOT apply CSS
+        rules from SVG <style> blocks to HTML inside foreignObject, so we
+        must inject inline style="color:..." on the container divs.
         """
         if "foreignObject" not in svg or not self._primary_text_color:
             return svg
-        color_rule = f".nodeLabel {{ color: {self._primary_text_color}; }}"
-        # Inject into existing <style> block
-        if "<style>" in svg:
-            return svg.replace("</style>", f"\n{color_rule}\n</style>", 1)
-        # No style block — add one after opening <svg> tag
-        return re.sub(
-            r'(<svg\b[^>]*>)',
-            rf'\1<style>{color_rule}</style>',
-            svg, count=1,
+        color = self._primary_text_color
+
+        def _add_color_to_div(match: re.Match[str]) -> str:
+            """Prepend color into the existing style attribute of the div."""
+            full = match.group(0)
+            # If div already has a style attribute, prepend color into it
+            if 'style="' in full:
+                return re.sub(
+                    r'style="',
+                    f'style="color:{color}; ',
+                    full, count=1,
+                )
+            # No style attribute — add one
+            return full.replace("<div", f'<div style="color:{color}"', 1)
+
+        # Match foreignObject -> div (with any attributes in between)
+        svg = re.sub(
+            r'<foreignObject[^>]*>\s*<div[^>]*>',
+            _add_color_to_div,
+            svg,
         )
+        return svg
 
     def _inject_classdefs(self, source: str) -> str:
         """Insert classDef lines after the diagram-type header.

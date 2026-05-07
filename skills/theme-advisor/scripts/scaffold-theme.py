@@ -235,9 +235,10 @@ nav#toc .toc-pageno { color: var(--accent); font-variant-numeric: tabular-nums; 
 MERMAID_CONFIG_TEMPLATE = {
     "theme": "base",
     "themeVariables": {
-        # Core palette
+        # Core palette — primaryColor drives ER/class entity fills;
+        # must NOT be pure white or mermaid computes white text.
         "background": "{{paper}}",
-        "primaryColor": "{{paper}}",
+        "primaryColor": "{{accent_soft}}",
         "primaryTextColor": "{{ink}}",
         "primaryBorderColor": "{{ink_soft}}",
         "secondaryColor": "{{code_bg}}",
