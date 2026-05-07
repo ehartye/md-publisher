@@ -29,6 +29,8 @@ The four universal classes correspond to a node's role in the diagram's data flo
 
 These map per-theme to specific colors via each theme's `classDef` rules (e.g., ATLAS makes ingress nodes red-bordered, ARCADE makes them neon-green). No coloring is applied at preprocess time — only the class assignments. Themes do the visual work at publish time.
 
+For `classDiagram` blocks, the preprocess skill also detects **misplaced** `:::tag` markers — `:::tag` placed inside a method/attribute line (e.g. `+method():::core`) instead of on the class header. Mermaid silently ignores these. The skill auto-promotes them to the class header using priority-wins precedence (`ingress > core > transform > bridge`) and strips the misplaced markers from the body. See Step 2.5.
+
 Mermaid blocks that are NOT flowchart/graph (sequenceDiagram, classDiagram, etc.) are left alone — `classDef` only applies to flowcharts. They still get themed at publish time, just at the diagram-level palette rather than per-node.
 
 ## Workflow
@@ -76,6 +78,17 @@ For each block where `supports_classdef: true` and there are `untagged_node_ids`
 
 4. If a node's role genuinely doesn't fit any of the four, leave it untagged. Themes color untagged nodes with the diagram-level palette, which is a fine fallback.
 
+### Step 2.5 — Resolve misplaced classDiagram tags (auto-fix)
+
+For each block where `misplaced_tags` is non-empty:
+
+1. Group the misplaced tags by `class_name`.
+2. For each group with a non-null class name, pick the winning tag using the priority precedence: `ingress > core > transform > bridge`.
+3. Emit one `class_tag_promotions` entry into the decisions JSON: `{index, class_name, winning_tag}`. apply-tags will rewrite the header and strip body markers.
+4. For groups with `class_name: null` (orphan — no `class Foo` header line in the source), do NOT emit a promotion. Tell the user: "Class `<name>` has misplaced `:::tag` markers but no explicit `class <name>` header in the diagram. Add a header line so the auto-fix can attach the tag." apply-tags will warn and skip if a null-class promotion ever lands in the decisions doc.
+
+The promotions are independent of the `tags` array — they touch only classDiagram blocks via `class_tag_promotions`.
+
 ### Step 3 — Optional front matter
 
 If the user passes `--add-frontmatter` (or asks for richer cover-page metadata), prompt for:
@@ -107,6 +120,7 @@ The apply script:
 Tell the user:
 - How many blocks were scanned
 - How many tags were applied (and per-block breakdown)
+- How many class header promotions were applied (and how many orphan-class warnings, if any)
 - Where the backup landed
 - Suggest the next step: `/md-publisher:publish <doc.md>` for theme-aware coloring
 
@@ -157,6 +171,7 @@ ${CLAUDE_PLUGIN_ROOT}/skills/preprocess/scripts/apply-tags.py --decisions /tmp/d
 - **No mermaid blocks in the source** — report `0 blocks scanned, nothing to tag` and exit cleanly.
 - **All blocks fully tagged already** — report and exit cleanly. No backup is taken (no rewrite happened).
 - **User declines to choose tags for some nodes** — leave those untagged. Themes will color via the diagram-level palette.
+- **Orphan class with misplaced tag** — a `:::tag` marker appears on or near a class identifier that has no explicit `class Foo` declaration in the diagram. apply-tags emits a stderr warning and leaves the source untouched; ask the user to add the `class Foo` declaration so the auto-fix can attach the tag.
 
 ## Reference files
 
