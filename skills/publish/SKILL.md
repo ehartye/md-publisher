@@ -46,7 +46,7 @@ The publish script accepts:
 | `--all` | off | Render every (theme × mode) combo for built-in themes (6 outputs per format; 12 with `--format both`). Ignores `--theme`, `--mode`, and `--output`. |
 | `--no-cover` | off | Suppress the cover page. Useful when concatenating with other docs as an appendix, or embedding into a larger document. |
 | `--open` | off | Open the produced file(s) with the OS default viewer after build. |
-| `--format pdf\|docx\|both` | `pdf` | Output format. `pdf` (default) preserves existing behavior. `docx` builds a Microsoft Word document via python-docx. `both` produces sibling PDF + DOCX in the same `.md-publisher/<ts>/` dir. The `default` theme is PDF-only (no per-mode palette/fonts data); use atlas/phosphor/arcade or a custom theme for DOCX. |
+| `--format pdf\|docx\|both` | `pdf` | Output format. `pdf` (default) preserves existing behavior. `docx` builds a Microsoft Word document via python-docx. `both` produces sibling PDF + DOCX in the same `.md-publisher/<ts>/` dir. All themes support both formats. |
 
 ## Mermaid behavior
 

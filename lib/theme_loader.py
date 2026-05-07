@@ -339,23 +339,34 @@ def resolve_selection(
 
     palette: Palette | None = None
     fonts: Fonts | None = None
-    if name != DEFAULT_THEME_SLUG:
-        if is_user:
-            # User theme: spec.json may have top-level palette + fonts blocks.
-            if spec_block and "palette" in spec_block:
-                palette = _palette_from_user_spec(spec_block["palette"])
-            else:
-                palette = _palette_from_css(css_path)
-            if spec_block and "fonts" in spec_block:
-                fonts = _fonts_from_user_spec(spec_block["fonts"])
+    if is_user:
+        # User theme: spec.json may have top-level palette + fonts blocks.
+        if spec_block and "palette" in spec_block:
+            palette = _palette_from_user_spec(spec_block["palette"])
+        else:
+            palette = _palette_from_css(css_path)
+        if spec_block and "fonts" in spec_block:
+            fonts = _fonts_from_user_spec(spec_block["fonts"])
+        else:
+            fonts = _fonts_from_css(css_path)
+    else:
+        # Built-in: use the per-family resolver against the aggregate spec.
+        if spec_block:
+            if spec_block.get("fonts"):
+                try:
+                    fonts = _resolve_fonts(name, spec_block["fonts"])
+                except (ValueError, KeyError):
+                    # Fallback for families not explicitly handled (e.g. default)
+                    fonts = _fonts_from_css(css_path)
             else:
                 fonts = _fonts_from_css(css_path)
-        else:
-            # Built-in: use the per-family resolver against the aggregate spec.
-            if spec_block:
-                fonts = _resolve_fonts(name, spec_block["fonts"])
-                if mode and "modes" in spec_block:
-                    palette = _resolve_palette(name, spec_block["modes"][mode])
+            # Resolve palette: use explicit mode, or fall back to "light" for
+            # mode-less themes (e.g. default) that still declare modes.light.
+            effective_mode = mode or "light"
+            if "modes" in spec_block and effective_mode in spec_block["modes"]:
+                palette = _resolve_palette(name, spec_block["modes"][effective_mode])
+            else:
+                palette = _palette_from_css(css_path)
 
     return ThemeSelection(
         slug=slug,

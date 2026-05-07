@@ -414,8 +414,8 @@
       },
       "details": [
         "Single mode (no light/dark split).",
-        "PDF-only \u2014 use atlas/phosphor/arcade for DOCX output.",
-        "US Letter, 1-inch margins, bottom-center page numbers."
+        "US Letter, 1-inch margins, bottom-center page numbers.",
+        "Clean editorial baseline \u2014 good starting point for customization."
       ],
       "modes": {
         "light": {

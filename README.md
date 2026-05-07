@@ -23,7 +23,7 @@ A few documented concessions vs the PDF version (see `~/repos/md-publisher-bakeo
 - Arcade's mono uses JetBrains Mono (Word can't reliably address Recursive's mono variation axis).
 - DOCX requires the theme fonts to be installed locally — Word substitutes when fonts are missing. Run `/md-publisher:install-fonts` once after first install.
 
-The `default` theme is PDF-only; use atlas/phosphor/arcade or a custom theme for DOCX.
+All themes — including `default` — support both PDF and DOCX output.
 
 ## Themes
 
