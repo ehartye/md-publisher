@@ -1,0 +1,35 @@
+{
+  "slug": "atlas-light",
+  "name": "atlas",
+  "mode": "light",
+  "displayName": "ATLAS",
+  "tagline": "Editorial-trust serif on warm bone, red as punctuation only.",
+  "fonts": {
+    "serif": "Newsreader",
+    "sans": "Sora",
+    "mono": "JetBrains Mono",
+    "display": "Newsreader"
+  },
+  "palette": {
+    "bg": "#F8F1E7",
+    "paper": "#FFFFFF",
+    "ink": "#0F1620",
+    "ink_soft": "#4A5568",
+    "accent": "#B22234",
+    "accent_alt": "#DDD3C1",
+    "rule": "#DDD3C1",
+    "code_bg": "#F4ECDB",
+    "code_text": "#0F1620",
+    "table_stripe": "#F8F1E7"
+  },
+  "mermaid": {
+    "tagStyling": {
+      "ingress": {"fill": "#FFFFFF", "stroke": "#B22234", "color": "#0F1620", "strokeWidth": 2},
+      "core": {"fill": "#FFFFFF", "stroke": "#4A5568", "color": "#0F1620", "strokeWidth": 1},
+      "transform": {"fill": "#F4ECDB", "stroke": "#4A5568", "color": "#0F1620", "strokeWidth": 1},
+      "bridge": {"fill": "transparent", "stroke": "#4A5568", "color": "#4A5568", "strokeWidth": 1, "strokeDasharray": "4 3"}
+    },
+    "fontFamily": "Sora, sans-serif",
+    "lineColor": "#4A5568"
+  }
+}

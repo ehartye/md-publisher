@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><title>PHOSPHOR preview</title>
+<style>
+/* ============================================================================
+ * phosphor-light.css — PHOSPHOR theme, light variant.
+ *
+ * "1981 IBM 3270 amber CRT printed onto warm paper. Restrained terminal."
+ * Audience: developer / technical reference.
+ *
+ * Tokens lifted from themes/theme-spec.json -> themes.phosphor.modes.light.
+ *
+ * Per-spec details implemented:
+ *   - Shell prompt prefix on h2: '> section-name' (lowercased)
+ *   - Bracketed eyebrow tag wrapper around h1 chapter title
+ *   - // comment-prefix on blockquote callouts
+ *   - 'p.' prefix on TOC page numbers
+ *   - Code block: 1px sepia border + 3px left rule in accent (alert orange)
+ *   - Tables use dashed (header) / dotted (rows) rules
+ *   - Lowercase h2 via text-transform
+ *
+ * IBM Plex Mono throughout — single family, axes carry the typography.
+ * ============================================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,500;0,700;1,300;1,500&display=swap');
+
+:root {
+    --bg:            #F1E8D6;
+    --paper:         #FFFFFF;
+    --ink:           #2C2010;
+    --ink-soft:      #6E5530;
+    --ink-emphasis:  #5C3A00;
+    --ink-bright:    #8C5A00;
+    --accent:        #B23A00;
+    --accent-cool:   #4A7B73;
+    --accent-soft:   #C4B59B;
+    --rule:          #C4B59B;
+    --code-bg:       #E5DBC0;
+    --code-text:     #5C3A00;
+
+    --font-mono:    "IBM Plex Mono", "JetBrains Mono", "SF Mono", Consolas, monospace;
+
+    --size-body: 10.5pt;
+    --leading-body: 1.5;
+    --page-margin: 1in;
+}
+
+@page {
+    size: letter;
+    margin: var(--page-margin);
+    background: var(--bg);
+
+    @bottom-center {
+        content: "p." counter(page);
+        font-family: var(--font-mono);
+        font-weight: 300;
+        font-size: 9pt;
+        color: var(--ink-soft);
+    }
+    @top-right {
+        content: string(doc-title);
+        font-family: var(--font-mono);
+        font-weight: 300;
+        font-size: 9pt;
+        color: var(--ink-soft);
+        letter-spacing: 0.04em;
+    }
+}
+@page :first {
+    @top-right { content: ""; }
+    @bottom-center { content: ""; }
+}
+
+html {
+    font-family: var(--font-mono);
+    font-weight: 300;
+    font-size: var(--size-body);
+    line-height: var(--leading-body);
+    color: var(--ink);
+    background: var(--bg);
+    widows: 3;
+    orphans: 3;
+    font-feature-settings: 'zero';
+}
+body { margin: 0; padding: 0; }
+h1.doc-title { string-set: doc-title content(); }
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-mono);
+    color: var(--ink-emphasis);
+    line-height: 1.2;
+    break-after: avoid-page;
+    page-break-after: avoid;
+}
+
+h1 {
+    font-size: 22pt;
+    font-weight: 700;
+    margin: 0 0 0.6em 0;
+    padding-bottom: 0.4em;
+    color: var(--ink-emphasis);
+    bookmark-level: 1;
+    break-before: page;
+    page-break-before: always;
+    border-bottom: 1px dashed var(--ink-soft);
+}
+h1.doc-title {
+    break-before: auto;
+    page-break-before: auto;
+    margin-top: 0;
+}
+
+/* h2 in lowercase with shell-prompt prefix and accent on the '>' */
+h2 {
+    font-size: 15pt;
+    font-weight: 700;
+    text-transform: lowercase;
+    color: var(--ink-emphasis);
+    margin: 1.4em 0 0.5em 0;
+    bookmark-level: 2;
+}
+h2::before {
+    content: "> ";
+    color: var(--accent);
+    font-weight: 700;
+}
+
+h3 { font-size: 12pt; font-weight: 700; margin: 1.1em 0 0.4em 0; bookmark-level: 3; color: var(--ink-emphasis); }
+h4, h5, h6 { font-size: 11pt; font-weight: 500; margin: 1em 0 0.3em 0; bookmark-level: 4; color: var(--ink-emphasis); }
+
+p {
+    margin: 0 0 0.6em 0;
+    text-align: left;       /* terminal aesthetic — no justification */
+    hyphens: none;
+}
+a { color: var(--accent); text-decoration: none; border-bottom: 1px dotted var(--accent); }
+strong { font-weight: 500; color: var(--ink-emphasis); }
+em { font-style: italic; color: var(--ink-soft); }   /* italics read as comments */
+
+code {
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-size: 0.95em;
+    background: var(--code-bg);
+    color: var(--code-text);
+    border: 1px solid var(--accent-soft);
+    padding: 0 0.3em;
+    line-height: 1;
+    border-radius: 0;
+}
+pre code { background: transparent; border: none; padding: 0; font-size: inherit; line-height: inherit; }
+
+pre {
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-size: 9pt;
+    line-height: 1.5;
+    background: var(--code-bg);
+    color: var(--code-text);
+    border: 1px solid var(--ink-soft);
+    border-left: 3px solid var(--accent);     /* signature PHOSPHOR detail */
+    border-radius: 0;
+    padding: 0.7em 0.9em;
+    margin: 0.8em 0;
+    overflow: hidden;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    break-inside: avoid;
+    page-break-inside: avoid;
+}
+.codehilite { margin: 0.8em 0; break-inside: avoid; page-break-inside: avoid; }
+.codehilite pre { margin: 0; }
+
+/* Tables: dashed top/bottom band, dashed under headers, dotted between rows */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.9em 0;
+    font-family: var(--font-mono);
+    font-weight: 300;
+    font-size: 9.5pt;
+    border-top: 1px solid var(--ink-soft);
+    border-bottom: 1px solid var(--ink-soft);
+    break-inside: avoid;
+    page-break-inside: avoid;
+}
+thead { display: table-header-group; }
+th, td { padding: 0.45em 0.7em; text-align: left; vertical-align: top; }
+th {
+    font-weight: 700;
+    font-size: 9pt;
+    color: var(--ink-emphasis);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 1px dashed var(--ink-soft);
+    background: transparent;
+}
+td { border-bottom: 1px dotted var(--ink-soft); }
+th[style*="right"], td[style*="right"] { text-align: right; }
+th[style*="center"], td[style*="center"] { text-align: center; }
+
+figure.mermaid {
+    margin: 1em auto;
+    text-align: center;
+    background: var(--paper);
+    border: 1px solid var(--ink-soft);
+    padding: 0.5em;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    break-before: avoid;
+    page-break-before: avoid;
+}
+figure.mermaid svg { display: block; margin: 0 auto; max-width: 100%; max-height: 6in; width: auto; height: auto; }
+figure.mermaid figcaption { font-family: var(--font-mono); font-weight: 300; font-size: 9pt; color: var(--ink-soft); margin-top: 0.4em; }
+figure.mermaid.oversized {
+    break-before: page;
+    break-after: page;
+    page-break-before: always;
+    page-break-after: always;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    margin: 0;
+    border: none;
+}
+figure.mermaid.oversized svg { max-width: 6.5in; max-height: 9in; width: auto; height: auto; }
+
+ul, ol { margin: 0.4em 0 0.8em 1.4em; padding: 0; }
+li { margin: 0.2em 0; }
+ul { list-style-type: square; }
+
+/* Callouts: '// ' prefix in accent, 1px box with accent left rule */
+blockquote {
+    margin: 0.8em 0;
+    padding: 0.4em 1em;
+    border: 1px solid var(--ink-soft);
+    border-left: 3px solid var(--accent);
+    background: transparent;
+    color: var(--ink);
+    font-style: italic;
+    font-weight: 300;
+    break-inside: avoid;
+    page-break-inside: avoid;
+}
+blockquote::before {
+    content: "// ";
+    color: var(--accent);
+    font-style: normal;
+}
+
+hr { border: none; border-top: 1px dashed var(--ink-soft); margin: 1.2em 0; }
+
+/* TOC: 'p.NNN' page numbers in dim sepia/amber */
+nav#toc { break-after: page; page-break-after: always; }
+nav#toc h2.toc-title {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 16pt;
+    color: var(--ink-emphasis);
+    text-transform: lowercase;
+    margin: 0 0 1em 0;
+    padding-bottom: 0.3em;
+    border-bottom: 1px dashed var(--ink-soft);
+    break-before: auto;
+    page-break-before: auto;
+    bookmark-level: none;
+}
+/* Override the global h2::before so the TOC title doesn't get '> ' */
+nav#toc h2.toc-title::before { content: ""; }
+nav#toc ol { list-style: none; margin: 0; padding: 0; counter-reset: toc-counter; }
+nav#toc ol ol { margin-left: 1.2em; }
+nav#toc li { margin: 0.35em 0; }
+nav#toc a {
+    display: block;
+    color: var(--ink);
+    border-bottom: none;
+    font-family: var(--font-mono);
+    text-decoration: none;
+}
+nav#toc li.toc-h1 > a { font-size: 11pt; font-weight: 500; margin-top: 0.6em; color: var(--ink-emphasis); }
+nav#toc li.toc-h2 > a { font-size: 10pt; font-weight: 300; color: var(--ink-soft); padding-left: 0.6em; }
+nav#toc a::after {
+    content: leader('. ') "p." target-counter(attr(href), page);
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-emphasis);
+    font-weight: 500;
+}
+
+.preview-page { width: 7in; margin: 1in auto; background: var(--bg); padding: 1in; }
+.mermaid-fig { margin: 1.5em 0; padding: 0.5em; background: var(--paper); border: 1px solid var(--rule); border-radius: 4px; }
+.mermaid-fig figcaption { font-family: var(--font-sans); font-size: 9pt; color: var(--ink-soft); margin-top: 0.4em; text-align: center; }
+.mermaid-fig svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+.mermaid-source { font-family: var(--font-mono); font-size: 0.8em; background: var(--code-bg); padding: 0.5em; overflow-x: auto; }
+.mermaid-fallback-note { font-family: var(--font-sans); font-size: 8pt; color: var(--ink-soft); font-style: italic; }
+</style></head>
+<body><div class="preview-page">
+<h1>PHOSPHOR</h1>
+<p style="color: var(--ink-soft); font-style: italic;">1981 IBM 3270 amber CRT printed onto warm paper. Restrained, not 'I just installed neovim'.</p>
+<h2>Section heading</h2>
+<p>The quick brown fox jumps over the lazy dog. Body text in <em>IBM Plex Mono</em>; an <a href="#">accent link</a> like this.</p>
+<pre><code>def example():
+    return "code block"</code></pre>
+<table><thead><tr><th>Column</th><th>Column</th></tr></thead>
+<tbody><tr><td>Row data</td><td>More data</td></tr></tbody></table>
+
+<h2>Diagram preview</h2>
+<figure class="mermaid-fig">
+<pre class="mermaid-source">flowchart LR
+    classDef ingress   fill:transparent,stroke:#8C5A00,color:#5C3A00,stroke-width:2
+    classDef core      fill:transparent,stroke:#5C3A00,color:#5C3A00,stroke-width:2
+    classDef transform fill:transparent,stroke:#6E5530,color:#2C2010,stroke-width:1
+    classDef bridge    fill:transparent,stroke:#4A7B73,color:#4A7B73,stroke-width:1
+    A[Input]:::ingress --> B[Validate]:::transform
+    B --> C[Process]:::core
+    C --> D{Decision}:::bridge
+    D --> E[Output]:::ingress
+</pre><p class="mermaid-fallback-note">(install runtime then re-scaffold to see live diagrams)</p>
+<figcaption>Flowchart with classDef tags</figcaption>
+</figure>
+<figure class="mermaid-fig">
+<pre class="mermaid-source">erDiagram
+    CUSTOMER {
+        string id PK
+        string name
+        string email
+    }
+    ORDER {
+        string id PK
+        string customer_id FK
+        decimal total
+        date placed_at
+    }
+    CUSTOMER ||--o{ ORDER : places
+</pre><p class="mermaid-fallback-note">(install runtime then re-scaffold to see live diagrams)</p>
+<figcaption>ER diagram (themed via mermaid-config)</figcaption>
+</figure>
+<figure class="mermaid-fig">
+<pre class="mermaid-source">classDiagram
+    class Engine:::ingress {
+        +run()
+        +stop()
+    }
+    class Worker {
+        +process(task)
+    }
+    class Queue {
+        +enqueue(item)
+        +dequeue() item
+    }
+    Engine --> Queue
+    Engine --> Worker
+    Worker --> Queue
+</pre><p class="mermaid-fallback-note">(install runtime then re-scaffold to see live diagrams)</p>
+<figcaption>Class diagram with <code>:::ingress</code> header tag</figcaption>
+</figure>
+
+<p style="margin-top: 1em; font-family: var(--font-sans); font-size: 9pt; color: var(--ink-soft);">
+&mdash; PHOSPHOR &middot; theme preview</p>
+</div></body></html>

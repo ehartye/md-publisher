@@ -1,0 +1,35 @@
+{
+  "slug": "phosphor-light",
+  "name": "phosphor",
+  "mode": "light",
+  "displayName": "PHOSPHOR",
+  "tagline": "1981 IBM 3270 amber CRT printed onto warm paper. Restrained, not 'I just installed neovim'.",
+  "fonts": {
+    "serif": "IBM Plex Mono",
+    "sans": "IBM Plex Mono",
+    "mono": "IBM Plex Mono",
+    "display": "IBM Plex Mono"
+  },
+  "palette": {
+    "bg": "#F1E8D6",
+    "paper": "#FFFFFF",
+    "ink": "#2C2010",
+    "ink_soft": "#6E5530",
+    "accent": "#B23A00",
+    "accent_alt": "#C4B59B",
+    "rule": "#C4B59B",
+    "code_bg": "#E5DBC0",
+    "code_text": "#5C3A00",
+    "table_stripe": "#FFFFFF"
+  },
+  "mermaid": {
+    "tagStyling": {
+      "ingress": {"fill": "transparent", "stroke": "#8C5A00", "color": "#5C3A00", "strokeWidth": 2},
+      "core": {"fill": "transparent", "stroke": "#5C3A00", "color": "#5C3A00", "strokeWidth": 2},
+      "transform": {"fill": "transparent", "stroke": "#6E5530", "color": "#2C2010", "strokeWidth": 1},
+      "bridge": {"fill": "transparent", "stroke": "#4A7B73", "color": "#4A7B73", "strokeWidth": 1}
+    },
+    "fontFamily": "IBM Plex Mono, monospace",
+    "lineColor": "#6E5530"
+  }
+}

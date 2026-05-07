@@ -1,0 +1,35 @@
+{
+  "slug": "arcade-light",
+  "name": "arcade",
+  "mode": "light",
+  "displayName": "ARCADE",
+  "tagline": "Star Fox 64 manual / Nintendo Power feature, but legible. Bold blocky display, vibrant accents, never childish.",
+  "fonts": {
+    "serif": "Recursive",
+    "sans": "Recursive",
+    "mono": "Recursive",
+    "display": "Audiowide"
+  },
+  "palette": {
+    "bg": "#FAF6E8",
+    "paper": "#FFFFFF",
+    "ink": "#1A1A2E",
+    "ink_soft": "#4A4A6B",
+    "accent": "#D11876",
+    "accent_alt": "#00A862",
+    "rule": "#E5E0CC",
+    "code_bg": "#F2EAD0",
+    "code_text": "#1A1A2E",
+    "table_stripe": "#FFFFFF"
+  },
+  "mermaid": {
+    "tagStyling": {
+      "ingress": {"fill": "#FFFFFF", "stroke": "#00A862", "color": "#1A1A2E", "strokeWidth": 3},
+      "core": {"fill": "#FFFFFF", "stroke": "#D11876", "color": "#1A1A2E", "strokeWidth": 3},
+      "transform": {"fill": "#FFFFFF", "stroke": "#007FAA", "color": "#1A1A2E", "strokeWidth": 3},
+      "bridge": {"fill": "transparent", "stroke": "#4A4A6B", "color": "#4A4A6B", "strokeWidth": 1}
+    },
+    "fontFamily": "Recursive, sans-serif",
+    "lineColor": "#4A4A6B"
+  }
+}
