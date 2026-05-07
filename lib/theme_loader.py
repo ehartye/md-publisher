@@ -414,9 +414,19 @@ def build_classdefs(selection: ThemeSelection) -> list[str]:
             selection.spec_block.get("mermaid", {}).get("tagStyling", {})
         )
     else:
-        tag_styling = (
-            selection.spec_block.get("mermaid", {}).get("tagStyling", {}).get(mode, {})
+        raw_tag_styling = (
+            selection.spec_block.get("mermaid", {}).get("tagStyling", {})
         )
+        # Built-in themes nest by mode: tagStyling.{mode}.{tag}
+        # User themes (per-mode dirs) are flat: tagStyling.{tag}
+        tag_styling = raw_tag_styling.get(mode, raw_tag_styling)
+        # If we got the mode sub-dict, use it; otherwise the flat dict
+        # itself is the tag styling (check by seeing if a universal tag
+        # key exists at the top level).
+        if isinstance(tag_styling, dict) and not any(
+            k in tag_styling for k in UNIVERSAL_TAGS
+        ):
+            tag_styling = {}
     if not tag_styling:
         return []
     lines: list[str] = []
