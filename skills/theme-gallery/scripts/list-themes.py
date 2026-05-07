@@ -215,7 +215,11 @@ def main() -> int:
     builtin_by_slug = {t["slug"]: t for t in themes}
     for ut in user_themes:
         builtin_by_slug[ut["slug"]] = ut
-    merged = sorted(builtin_by_slug.values(), key=lambda t: (t["source"], t["slug"]))
+    merged = sorted(builtin_by_slug.values(), key=lambda t: (
+        t["source"],
+        1 if t["slug"] == "default" else 0,
+        t["slug"],
+    ))
 
     payload = {
         "user_themes_dir": str(USER_THEMES_DIR),
