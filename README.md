@@ -4,15 +4,16 @@ A plugin for Claude Code and GitHub Copilot CLI that turns markdown documents â€
 
 ## What you get
 
-Five skills, six bundled themes, and Python pipelines that produce print-ready PDFs and editable DOCX with searchable mermaid text.
+Six skills, six bundled themes, and Python pipelines that produce print-ready PDFs and editable DOCX with searchable mermaid text.
 
 | Skill | What it does | Invoke as |
 |---|---|---|
 | **`publish`** | Turn a markdown file into a themed PDF or DOCX (or both). | `/md-publisher:publish doc.md [--theme atlas --mode light] [--format pdf\|docx\|both] [--all] [--open] [--no-cover]` |
-| **`preprocess`** | LLM-tag mermaid diagrams (`:::ingress / :::core / :::transform / :::bridge`) so themes color nodes by role. Rewrites the source in place; original gets backed up. | `/md-publisher:preprocess doc.md [--add-frontmatter]` |
-| **`theme-advisor`** | Interactive Q&A flow that produces a custom theme module under `~/.md-publisher/themes/<name>/`. | `/md-publisher:theme-advisor` |
+| **`preprocess`** | LLM-tag mermaid diagrams (`:::ingress / :::core / :::transform / :::bridge`) so themes color nodes by role. Also auto-fixes misplaced classDiagram tags (e.g. `:::core` inside a method line) by promoting them to the class header using priority `ingress > core > transform > bridge`. Rewrites the source in place; original gets backed up. | `/md-publisher:preprocess doc.md [--add-frontmatter]` |
+| **`theme-advisor`** | Interactive Q&A flow that produces a custom theme module under `~/.md-publisher/themes/<name>/`. The generated `preview.html` includes flowchart, ER, and classDiagram samples so authors can verify diagram styling before publishing. | `/md-publisher:theme-advisor` |
 | **`theme-gallery`** | List, preview, and pick from built-in + user-installed themes in one combined view. | `/md-publisher:theme-gallery` |
 | **`install-fonts`** | Per-user install of the Google Fonts the bundled themes use (Newsreader, Sora, JetBrains Mono, IBM Plex Mono, Audiowide, Bungee, Recursive). Cross-platform; no admin required. Run once after first DOCX build to fix font substitution. | `/md-publisher:install-fonts [--theme atlas --mode dark] [--dry-run]` |
+| **`rebuild-themes`** | Refresh installed themes after a plugin upgrade by re-deriving `mermaid-config.json` + `preview.html` from each theme's `spec.json`. Backs up the pre-migration files per theme. | `/md-publisher:rebuild-themes [--theme <slug>]` |
 
 ## DOCX output
 
