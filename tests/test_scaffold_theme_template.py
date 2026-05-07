@@ -106,6 +106,50 @@ def test_mermaid_config_uses_accent_soft_for_section_bkg(tmp_path):
     assert cfg["themeVariables"]["sectionBkgColor"] == "#E0EBF8"
 
 
+def test_mermaid_config_sets_html_labels_false_top_level(tmp_path):
+    """WeasyPrint can't render text inside SVG <foreignObject>, so we force
+    mermaid to emit native <text> elements for ER/class/etc. by setting
+    htmlLabels=false at the top level (overrides the per-diagram defaults).
+    """
+    spec = _minimal_spec()
+    result = _run_scaffold(tmp_path, spec)
+    assert result.returncode == 0, result.stderr
+    cfg = json.loads(
+        (tmp_path / ".md-publisher" / "themes" / spec["slug"] / "mermaid-config.json").read_text()
+    )
+    assert cfg["htmlLabels"] is False
+
+
+def test_mermaid_config_uses_accent_for_borders(tmp_path):
+    """Borders use accent so SVG-rendered diagrams (ER, class) show theme color
+    even when mermaid's HTML-table render path is disabled (htmlLabels=false).
+    """
+    spec = _minimal_spec()
+    result = _run_scaffold(tmp_path, spec)
+    assert result.returncode == 0, result.stderr
+    cfg = json.loads(
+        (tmp_path / ".md-publisher" / "themes" / spec["slug"] / "mermaid-config.json").read_text()
+    )
+    # accent = #005FCC in the seed spec
+    assert cfg["themeVariables"]["nodeBorder"] == "#005FCC"
+    assert cfg["themeVariables"]["primaryBorderColor"] == "#005FCC"
+
+
+def test_mermaid_config_lineColor_defaults_to_accent(tmp_path):
+    """When spec.json doesn't specify mermaid.lineColor, default to accent
+    (not ink_soft) — relationship lines and arrowheads then carry theme color.
+    """
+    spec = _minimal_spec()
+    # Remove the explicit lineColor from the seed spec to test the default
+    del spec["mermaid"]["lineColor"]
+    result = _run_scaffold(tmp_path, spec)
+    assert result.returncode == 0, result.stderr
+    cfg = json.loads(
+        (tmp_path / ".md-publisher" / "themes" / spec["slug"] / "mermaid-config.json").read_text()
+    )
+    assert cfg["themeVariables"]["lineColor"] == "#005FCC"
+
+
 def test_preview_html_contains_three_mermaid_figures(tmp_path):
     spec = _minimal_spec()
     result = _run_scaffold(tmp_path, spec)

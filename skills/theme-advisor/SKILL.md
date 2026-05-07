@@ -55,7 +55,8 @@ From the answers, build a JSON spec that conforms to the scaffold script's schem
 - `mode` (`"light"` or `"dark"`, or omit for mode-less)
 - `displayName` (Title Case; appears in theme-gallery cards)
 - `tagline` (one-sentence aesthetic summary; preview.html caption)
-- `mermaid.fontFamily` and `mermaid.lineColor` (defaults derived from palette)
+- `mermaid.fontFamily` (defaults to `fonts.sans`)
+- `mermaid.lineColor` (defaults to `palette.accent` — yields theme-colored relationship lines and arrowheads in ER and class diagrams; override only if accent is too saturated for the aesthetic)
 
 For palette derivation, follow these defaults if the user didn't specify:
 - `paper` defaults to `bg`; for cards/figures, `paper` can be a slightly elevated tone

@@ -100,7 +100,7 @@ def regenerate_mermaid_config(theme_dir: Path, spec: dict) -> str:
     """Re-derive mermaid-config.json from a theme's spec.json."""
     subs = _spec_to_substitution_dict(spec)
     line_color = spec.get("mermaid", {}).get(
-        "lineColor", spec["palette"].get("ink_soft", "#555555")
+        "lineColor", spec["palette"].get("accent", "#555555")
     )
     mermaid_font = spec.get("mermaid", {}).get(
         "fontFamily", subs["font_sans"]

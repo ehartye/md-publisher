@@ -4,17 +4,17 @@
     "background": "#FFFFFF",
     "primaryColor": "#C4B59B",
     "primaryTextColor": "#2C2010",
-    "primaryBorderColor": "#6E5530",
+    "primaryBorderColor": "#B23A00",
     "secondaryColor": "#E5DBC0",
     "secondaryTextColor": "#2C2010",
     "secondaryBorderColor": "#C4B59B",
     "tertiaryColor": "#C4B59B",
     "tertiaryTextColor": "#2C2010",
     "tertiaryBorderColor": "#B23A00",
-    "lineColor": "#6E5530",
+    "lineColor": "#B23A00",
     "fontFamily": "IBM Plex Mono, monospace",
     "mainBkg": "#FFFFFF",
-    "nodeBorder": "#6E5530",
+    "nodeBorder": "#B23A00",
     "nodeTextColor": "#2C2010",
     "edgeLabelBackground": "#FFFFFF",
     "clusterBkg": "#C4B59B",
@@ -89,5 +89,6 @@
   "mindmap": {
     "useMaxWidth": true
   },
-  "securityLevel": "loose"
+  "securityLevel": "loose",
+  "htmlLabels": false
 }

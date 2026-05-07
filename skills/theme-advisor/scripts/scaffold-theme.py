@@ -240,7 +240,7 @@ MERMAID_CONFIG_TEMPLATE = {
         "background": "{{paper}}",
         "primaryColor": "{{accent_soft}}",
         "primaryTextColor": "{{ink}}",
-        "primaryBorderColor": "{{ink_soft}}",
+        "primaryBorderColor": "{{accent}}",
         "secondaryColor": "{{code_bg}}",
         "secondaryTextColor": "{{ink}}",
         "secondaryBorderColor": "{{rule}}",
@@ -251,7 +251,7 @@ MERMAID_CONFIG_TEMPLATE = {
         "fontFamily": "{{mermaid_font}}",
         # Flowchart / generic node colors
         "mainBkg": "{{paper}}",
-        "nodeBorder": "{{ink_soft}}",
+        "nodeBorder": "{{accent}}",
         "nodeTextColor": "{{ink}}",
         "edgeLabelBackground": "{{paper}}",
         "clusterBkg": "{{accent_soft}}",
@@ -333,6 +333,7 @@ MERMAID_CONFIG_TEMPLATE = {
         "useMaxWidth": True,
     },
     "securityLevel": "loose",
+    "htmlLabels": False,
 }
 
 
@@ -591,7 +592,7 @@ def main() -> int:
             )
             return 2
 
-    line_color = spec["mermaid"].get("lineColor", palette.get("inkSoft", "#555555"))
+    line_color = spec["mermaid"].get("lineColor", palette.get("accent", "#555555"))
     mermaid_font = spec["mermaid"].get("fontFamily", fonts.get("sans", "sans-serif"))
     display_name = spec.get("displayName", slug)
     tagline = spec.get("tagline", "Custom md-publisher theme.")

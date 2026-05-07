@@ -4,17 +4,17 @@
     "background": "#14182A",
     "primaryColor": "#00FF95",
     "primaryTextColor": "#FFFFFF",
-    "primaryBorderColor": "#B0B7CC",
+    "primaryBorderColor": "#FF2B8E",
     "secondaryColor": "#0F1322",
     "secondaryTextColor": "#FFFFFF",
     "secondaryBorderColor": "#1F2540",
     "tertiaryColor": "#00FF95",
     "tertiaryTextColor": "#FFFFFF",
     "tertiaryBorderColor": "#FF2B8E",
-    "lineColor": "#B0B7CC",
+    "lineColor": "#FF2B8E",
     "fontFamily": "Recursive, sans-serif",
     "mainBkg": "#14182A",
-    "nodeBorder": "#B0B7CC",
+    "nodeBorder": "#FF2B8E",
     "nodeTextColor": "#FFFFFF",
     "edgeLabelBackground": "#14182A",
     "clusterBkg": "#00FF95",
@@ -89,5 +89,6 @@
   "mindmap": {
     "useMaxWidth": true
   },
-  "securityLevel": "loose"
+  "securityLevel": "loose",
+  "htmlLabels": false
 }
