@@ -103,6 +103,8 @@ class MermaidPreprocessor(Preprocessor):
         # the literal <figure>...</figure> HTML to splice back in (SVG mode)
         self.figures: dict[str, str] = {}
         self.build_dir.mkdir(parents=True, exist_ok=True)
+        # Read primary text color from mermaid config for foreignObject fix
+        self._primary_text_color = self._read_text_color(mermaid_config)
 
     def run(self, lines: list[str]) -> list[str]:
         text = "\n".join(lines)
@@ -187,6 +189,7 @@ class MermaidPreprocessor(Preprocessor):
 
         svg = svg_path.read_text(encoding="utf-8")
         cleaned_svg = self._strip_explicit_dimensions(svg)
+        cleaned_svg = self._inject_nodelabel_color(cleaned_svg)
         css_class = "mermaid oversized" if is_oversized else "mermaid"
 
         figure_html = (
@@ -263,6 +266,38 @@ class MermaidPreprocessor(Preprocessor):
             return tag
 
         return re.sub(r'<svg\b[^>]*>', fix_root_svg, svg, count=1)
+
+    @staticmethod
+    def _read_text_color(config_path: Path) -> str | None:
+        """Extract primaryTextColor from mermaid-config.json."""
+        try:
+            import json
+            cfg = json.loads(config_path.read_text(encoding="utf-8"))
+            return cfg.get("themeVariables", {}).get("primaryTextColor")
+        except Exception:
+            return None
+
+    def _inject_nodelabel_color(self, svg: str) -> str:
+        """Inject .nodeLabel { color } into SVGs using foreignObject.
+
+        Mermaid's ER/class/state diagrams use <foreignObject> with HTML
+        <span class="nodeLabel"> for text. Unlike SVG <text> elements
+        (which use fill), HTML elements need an explicit CSS color property.
+        Without it, text inherits browser default (black) which may be
+        invisible on dark backgrounds, or WeasyPrint may render it wrong.
+        """
+        if "foreignObject" not in svg or not self._primary_text_color:
+            return svg
+        color_rule = f".nodeLabel {{ color: {self._primary_text_color}; }}"
+        # Inject into existing <style> block
+        if "<style>" in svg:
+            return svg.replace("</style>", f"\n{color_rule}\n</style>", 1)
+        # No style block — add one after opening <svg> tag
+        return re.sub(
+            r'(<svg\b[^>]*>)',
+            rf'\1<style>{color_rule}</style>',
+            svg, count=1,
+        )
 
     def _inject_classdefs(self, source: str) -> str:
         """Insert classDef lines after the diagram-type header.
