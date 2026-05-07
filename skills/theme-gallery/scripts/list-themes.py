@@ -57,10 +57,14 @@ def _resolve_builtin_palette(family: str, mode: str | None, block: dict) -> dict
     the DOCX/PDF pipelines actually paint.
     """
     if mode is None:
-        return {}
-    p = block.get("modes", {}).get(mode, {})
-    if not p:
-        return {}
+        # Mode-less theme (e.g. default): try "light" as the single mode fallback
+        p = block.get("modes", {}).get("light", {})
+        if not p:
+            return {}
+    else:
+        p = block.get("modes", {}).get(mode, {})
+        if not p:
+            return {}
     if family == "arcade":
         accent = p.get("accent2", p.get("accent1", "#000000"))
         accent_alt = p.get("accent1", accent)
@@ -102,7 +106,17 @@ def _resolve_builtin_fonts(family: str, fonts: dict) -> dict:
             "mono":    "JetBrains Mono",  # see lib.theme_loader for rationale
             "display": fonts["display"]["family"],
         }
-    return {}
+    # Generic fallback (e.g. default theme)
+    result = {}
+    if "body" in fonts:
+        result["serif"] = fonts["body"]["family"]
+    if "display" in fonts:
+        result["display"] = fonts["display"]["family"]
+    if "mono" in fonts:
+        result["mono"] = fonts["mono"]["family"]
+    if "sansAccent" in fonts:
+        result["sans"] = fonts["sansAccent"]["family"]
+    return result
 
 
 def builtin_summary_for(name: str, mode: str | None) -> dict:
