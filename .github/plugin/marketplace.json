@@ -1,0 +1,17 @@
+{
+  "name": "md-publisher",
+  "owner": {
+    "name": "Eric Hartye",
+    "email": "eric@hartye.com"
+  },
+  "metadata": {
+    "description": "Markdown to themed PDF/DOCX publishing pipeline with mermaid support"
+  },
+  "plugins": [
+    {
+      "name": "md-publisher",
+      "source": "./",
+      "description": "Turn markdown documents (with embedded mermaid) into themed, searchable, paged PDFs and DOCX files via WeasyPrint and python-docx"
+    }
+  ]
+}
