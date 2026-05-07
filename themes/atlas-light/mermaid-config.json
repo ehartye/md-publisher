@@ -1,38 +1,95 @@
 {
   "theme": "base",
-  "htmlLabels": false,
   "themeVariables": {
-    "fontFamily": "Sora, sans-serif",
-    "fontSize": "14px",
+    "background": "#FFFFFF",
     "primaryColor": "#FFFFFF",
     "primaryTextColor": "#0F1620",
     "primaryBorderColor": "#4A5568",
-    "lineColor": "#4A5568",
     "secondaryColor": "#F4ECDB",
-    "tertiaryColor": "#FFFFFF",
-    "background": "#FFFFFF",
+    "secondaryTextColor": "#0F1620",
+    "secondaryBorderColor": "#DDD3C1",
+    "tertiaryColor": "#DDD3C1",
+    "tertiaryTextColor": "#0F1620",
+    "tertiaryBorderColor": "#B22234",
+    "lineColor": "#4A5568",
+    "fontFamily": "Sora, sans-serif",
+    "fontSize": "14px",
     "mainBkg": "#FFFFFF",
+    "nodeBorder": "#4A5568",
+    "nodeTextColor": "#0F1620",
     "edgeLabelBackground": "#FFFFFF",
     "clusterBkg": "#F4ECDB",
     "clusterBorder": "#DDD3C1",
     "actorBkg": "#FFFFFF",
-    "actorBorder": "#4A5568",
+    "actorBorder": "#B22234",
     "actorTextColor": "#0F1620",
-    "noteBkgColor": "#F4ECDB",
+    "actorLineColor": "#4A5568",
+    "signalColor": "#4A5568",
+    "signalTextColor": "#0F1620",
+    "noteBkgColor": "#DDD3C1",
     "noteTextColor": "#0F1620",
     "noteBorderColor": "#B22234",
-    "signalColor": "#4A5568",
-    "signalTextColor": "#0F1620"
+    "activationBkgColor": "#F4ECDB",
+    "activationBorderColor": "#4A5568",
+    "labelTextColor": "#0F1620",
+    "labelColor": "#0F1620",
+    "altBackground": "#F4ECDB",
+    "classText": "#0F1620",
+    "attributeBackgroundColorEven": "#FFFFFF",
+    "attributeBackgroundColorOdd": "#F4ECDB",
+    "pie1": "#B22234",
+    "pie2": "#4A5568",
+    "pie3": "#DDD3C1",
+    "pie4": "#F4ECDB",
+    "pie5": "#DDD3C1",
+    "pie6": "#B22234",
+    "pie7": "#4A5568",
+    "pie8": "#DDD3C1",
+    "pieStrokeColor": "#FFFFFF",
+    "pieTitleTextColor": "#0F1620",
+    "pieLegendTextColor": "#0F1620",
+    "sectionBkgColor": "#F4ECDB",
+    "sectionBkgColor2": "#FFFFFF",
+    "taskBkgColor": "#DDD3C1",
+    "activeTaskBkgColor": "#B22234",
+    "activeTaskBorderColor": "#B22234",
+    "doneTaskBkgColor": "#DDD3C1",
+    "doneTaskBorderColor": "#4A5568",
+    "taskTextColor": "#0F1620",
+    "taskTextDarkColor": "#0F1620",
+    "gridColor": "#DDD3C1",
+    "todayLineColor": "#B22234"
   },
   "flowchart": {
     "curve": "basis",
     "htmlLabels": false,
-    "useMaxWidth": false
+    "useMaxWidth": true,
+    "nodeSpacing": 30,
+    "rankSpacing": 30
   },
   "sequence": {
     "actorMargin": 50,
     "noteMargin": 10,
     "messageMargin": 35,
-    "useMaxWidth": false
-  }
+    "useMaxWidth": true
+  },
+  "state": {
+    "useMaxWidth": true
+  },
+  "class": {
+    "useMaxWidth": true
+  },
+  "er": {
+    "useMaxWidth": true
+  },
+  "pie": {
+    "useMaxWidth": true
+  },
+  "gantt": {
+    "useMaxWidth": true
+  },
+  "mindmap": {
+    "useMaxWidth": true
+  },
+  "securityLevel": "loose"
 }

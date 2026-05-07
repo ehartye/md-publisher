@@ -98,7 +98,12 @@ def scan(source_path: Path) -> dict:
     for idx, m in enumerate(FENCE_RE.finditer(text)):
         block_src = m.group(2)
         diagram_type = detect_diagram_type(block_src)
-        supports_classdef = diagram_type in ("flowchart", "graph")
+        supports_classdef = diagram_type in (
+            "flowchart", "graph",
+            "stateDiagram-v2", "stateDiagram",
+            "classDiagram", "classDiagram-v2",
+            "mindmap",
+        )
         if supports_classdef:
             node_ids, tagged = collect_nodes(block_src)
             untagged = [n for n in node_ids if n not in tagged]

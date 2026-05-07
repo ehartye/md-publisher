@@ -1,38 +1,95 @@
 {
   "theme": "base",
-  "htmlLabels": false,
   "themeVariables": {
-    "fontFamily": "IBM Plex Mono, monospace",
-    "fontSize": "13px",
-    "primaryColor": "#0F0E12",
-    "primaryTextColor": "#FFB000",
-    "primaryBorderColor": "#FFB000",
-    "lineColor": "#8A7350",
-    "secondaryColor": "#16100A",
-    "tertiaryColor": "#0F0E12",
     "background": "#0F0E12",
+    "primaryColor": "#0F0E12",
+    "primaryTextColor": "#EDE2C9",
+    "primaryBorderColor": "#8A7350",
+    "secondaryColor": "#16100A",
+    "secondaryTextColor": "#EDE2C9",
+    "secondaryBorderColor": "#2A2310",
+    "tertiaryColor": "#2A1E00",
+    "tertiaryTextColor": "#EDE2C9",
+    "tertiaryBorderColor": "#FF6E00",
+    "lineColor": "#8A7350",
+    "fontFamily": "IBM Plex Mono, monospace",
+    "fontSize": "14px",
     "mainBkg": "#0F0E12",
+    "nodeBorder": "#8A7350",
+    "nodeTextColor": "#EDE2C9",
     "edgeLabelBackground": "#0F0E12",
     "clusterBkg": "#16100A",
     "clusterBorder": "#2A2310",
     "actorBkg": "#0F0E12",
-    "actorBorder": "#FFB000",
-    "actorTextColor": "#FFB000",
-    "noteBkgColor": "#16100A",
-    "noteTextColor": "#FFD060",
-    "noteBorderColor": "#FF6E00",
+    "actorBorder": "#FF6E00",
+    "actorTextColor": "#EDE2C9",
+    "actorLineColor": "#8A7350",
     "signalColor": "#8A7350",
-    "signalTextColor": "#EDE2C9"
+    "signalTextColor": "#EDE2C9",
+    "noteBkgColor": "#2A1E00",
+    "noteTextColor": "#EDE2C9",
+    "noteBorderColor": "#FF6E00",
+    "activationBkgColor": "#16100A",
+    "activationBorderColor": "#8A7350",
+    "labelTextColor": "#EDE2C9",
+    "labelColor": "#EDE2C9",
+    "altBackground": "#16100A",
+    "classText": "#EDE2C9",
+    "attributeBackgroundColorEven": "#0F0E12",
+    "attributeBackgroundColorOdd": "#16100A",
+    "pie1": "#FF6E00",
+    "pie2": "#8A7350",
+    "pie3": "#2A1E00",
+    "pie4": "#16100A",
+    "pie5": "#2A2310",
+    "pie6": "#FF6E00",
+    "pie7": "#8A7350",
+    "pie8": "#2A1E00",
+    "pieStrokeColor": "#0F0E12",
+    "pieTitleTextColor": "#EDE2C9",
+    "pieLegendTextColor": "#EDE2C9",
+    "sectionBkgColor": "#16100A",
+    "sectionBkgColor2": "#0F0E12",
+    "taskBkgColor": "#2A1E00",
+    "activeTaskBkgColor": "#FF6E00",
+    "activeTaskBorderColor": "#FF6E00",
+    "doneTaskBkgColor": "#2A2310",
+    "doneTaskBorderColor": "#8A7350",
+    "taskTextColor": "#EDE2C9",
+    "taskTextDarkColor": "#EDE2C9",
+    "gridColor": "#2A2310",
+    "todayLineColor": "#FF6E00"
   },
   "flowchart": {
     "curve": "basis",
     "htmlLabels": false,
-    "useMaxWidth": false
+    "useMaxWidth": true,
+    "nodeSpacing": 30,
+    "rankSpacing": 30
   },
   "sequence": {
     "actorMargin": 50,
     "noteMargin": 10,
     "messageMargin": 35,
-    "useMaxWidth": false
-  }
+    "useMaxWidth": true
+  },
+  "state": {
+    "useMaxWidth": true
+  },
+  "class": {
+    "useMaxWidth": true
+  },
+  "er": {
+    "useMaxWidth": true
+  },
+  "pie": {
+    "useMaxWidth": true
+  },
+  "gantt": {
+    "useMaxWidth": true
+  },
+  "mindmap": {
+    "useMaxWidth": true
+  },
+  "securityLevel": "loose"
 }

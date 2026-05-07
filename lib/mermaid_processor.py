@@ -69,10 +69,15 @@ class MermaidPreprocessor(Preprocessor):
     )
 
     # Diagram-type tokens that support ``classDef``. Anything outside this
-    # set (sequenceDiagram, classDiagram, stateDiagram, etc.) gets no
+    # set (sequenceDiagram, erDiagram, gantt, pie, etc.) gets no
     # classDef injection — those diagram types are themed via
     # mermaid-config.json's themeVariables.
-    CLASSDEF_DIAGRAMS = ("flowchart", "graph")
+    CLASSDEF_DIAGRAMS = (
+        "flowchart", "graph",
+        "stateDiagram-v2", "stateDiagram",
+        "classDiagram", "classDiagram-v2",
+        "mindmap",
+    )
 
     def __init__(self, md: Markdown, mmdc_path: Path, build_dir: Path,
                  mermaid_config: Path, puppeteer_config: Path,

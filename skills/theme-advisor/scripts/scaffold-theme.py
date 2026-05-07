@@ -235,19 +235,101 @@ nav#toc .toc-pageno { color: var(--accent); font-variant-numeric: tabular-nums; 
 MERMAID_CONFIG_TEMPLATE = {
     "theme": "base",
     "themeVariables": {
+        # Core palette
         "background": "{{paper}}",
         "primaryColor": "{{paper}}",
         "primaryTextColor": "{{ink}}",
         "primaryBorderColor": "{{ink_soft}}",
+        "secondaryColor": "{{code_bg}}",
+        "secondaryTextColor": "{{ink}}",
+        "secondaryBorderColor": "{{rule}}",
+        "tertiaryColor": "{{accent_soft}}",
+        "tertiaryTextColor": "{{ink}}",
+        "tertiaryBorderColor": "{{accent}}",
         "lineColor": "{{line_color}}",
-        "tertiaryColor": "{{accent}}",
         "fontFamily": "{{mermaid_font}}",
+        # Flowchart / generic node colors
+        "mainBkg": "{{paper}}",
+        "nodeBorder": "{{ink_soft}}",
+        "nodeTextColor": "{{ink}}",
+        "edgeLabelBackground": "{{paper}}",
+        "clusterBkg": "{{code_bg}}",
+        "clusterBorder": "{{rule}}",
+        # Sequence diagram
+        "actorBkg": "{{paper}}",
+        "actorBorder": "{{accent}}",
+        "actorTextColor": "{{ink}}",
+        "actorLineColor": "{{ink_soft}}",
+        "signalColor": "{{ink_soft}}",
+        "signalTextColor": "{{ink}}",
+        "noteBkgColor": "{{accent_soft}}",
+        "noteTextColor": "{{ink}}",
+        "noteBorderColor": "{{accent}}",
+        "activationBkgColor": "{{code_bg}}",
+        "activationBorderColor": "{{ink_soft}}",
+        "labelTextColor": "{{ink}}",
+        # State diagram
+        "labelColor": "{{ink}}",
+        "altBackground": "{{code_bg}}",
+        # Class diagram
+        "classText": "{{ink}}",
+        # ER diagram
+        "attributeBackgroundColorEven": "{{paper}}",
+        "attributeBackgroundColorOdd": "{{code_bg}}",
+        # Pie chart — 8 slices cycling accent variations
+        "pie1": "{{accent}}",
+        "pie2": "{{ink_soft}}",
+        "pie3": "{{accent_soft}}",
+        "pie4": "{{code_bg}}",
+        "pie5": "{{rule}}",
+        "pie6": "{{accent}}",
+        "pie7": "{{ink_soft}}",
+        "pie8": "{{accent_soft}}",
+        "pieStrokeColor": "{{paper}}",
+        "pieTitleTextColor": "{{ink}}",
+        "pieLegendTextColor": "{{ink}}",
+        # Gantt
+        "sectionBkgColor": "{{code_bg}}",
+        "sectionBkgColor2": "{{paper}}",
+        "taskBkgColor": "{{accent_soft}}",
+        "activeTaskBkgColor": "{{accent}}",
+        "activeTaskBorderColor": "{{accent}}",
+        "doneTaskBkgColor": "{{rule}}",
+        "doneTaskBorderColor": "{{ink_soft}}",
+        "taskTextColor": "{{ink}}",
+        "taskTextDarkColor": "{{ink}}",
+        "gridColor": "{{rule}}",
+        "todayLineColor": "{{accent}}",
     },
     "flowchart": {
         "htmlLabels": False,
         "useMaxWidth": True,
         "nodeSpacing": 30,
         "rankSpacing": 30,
+    },
+    "sequence": {
+        "actorMargin": 50,
+        "noteMargin": 10,
+        "messageMargin": 35,
+        "useMaxWidth": True,
+    },
+    "state": {
+        "useMaxWidth": True,
+    },
+    "class": {
+        "useMaxWidth": True,
+    },
+    "er": {
+        "useMaxWidth": True,
+    },
+    "pie": {
+        "useMaxWidth": True,
+    },
+    "gantt": {
+        "useMaxWidth": True,
+    },
+    "mindmap": {
+        "useMaxWidth": True,
     },
     "securityLevel": "loose",
 }
