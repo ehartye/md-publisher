@@ -23,3 +23,6 @@ Thumbs.db
 
 # Worktrees (local isolated workspaces — never tracked)
 .worktrees/
+
+# rebuild-themes per-run backup directories under themes/<theme>/
+themes/*/.backup-*/
