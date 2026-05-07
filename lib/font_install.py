@@ -37,6 +37,8 @@ FONT_SLUGS = {
     "Sora":           "sora",
     "JetBrains Mono": "jetbrainsmono",
     "IBM Plex Mono":  "ibmplexmono",
+    "IBM Plex Sans":  "ibmplexsans",
+    "IBM Plex Serif": "ibmplexserif",
     "Audiowide":      "audiowide",
     "Bungee":         "bungee",
     "Recursive":      "recursive",
