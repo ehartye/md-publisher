@@ -1,0 +1,46 @@
+{
+  "$comment": "Standalone Claude Code marketplace manifest for md-publisher. Enables direct install via `/plugin marketplace add ehartye/md-publisher`. The single-plugin entry points at the repo root, where .claude-plugin/plugin.json defines the plugin itself.",
+
+  "name": "md-publisher",
+  "owner": {
+    "name": "Eric Hartye",
+    "email": "eric@hartye.com"
+  },
+  "metadata": {
+    "description": "Markdown to themed PDF/DOCX publishing pipeline with full mermaid support."
+  },
+
+  "plugins": [
+    {
+      "name": "md-publisher",
+      "source": "./",
+      "version": "0.4.0",
+      "description": "Turn markdown documents (with embedded mermaid) into themed, searchable, paged PDFs and Microsoft Word DOCX files via WeasyPrint and python-docx. 6 skills (publish, preprocess, theme-advisor, theme-gallery, install-fonts, rebuild-themes) + 6 bundled themes (atlas/phosphor/arcade in light + dark) + interactive custom-theme creation.",
+      "category": "publishing",
+      "tags": [
+        "markdown",
+        "pdf",
+        "docx",
+        "word",
+        "weasyprint",
+        "python-docx",
+        "mermaid",
+        "publishing",
+        "themes",
+        "paged-media",
+        "documentation"
+      ],
+      "license": "MIT",
+      "homepage": "https://github.com/ehartye/md-publisher",
+      "repository": "https://github.com/ehartye/md-publisher.git",
+      "requirements": {
+        "node": ">=18",
+        "python": ">=3.10",
+        "system": [
+          "GTK 3 runtime (Pango / Cairo / GDK-Pixbuf) — on Windows the easiest source is Inkscape or GIMP; on Linux apt install libpango-1.0-0 libcairo2 libgdk-pixbuf2.0-0; on macOS brew install pango cairo gdk-pixbuf libffi"
+        ]
+      },
+      "firstRunBehavior": "On first invocation of any skill, the plugin auto-installs a Python venv (WeasyPrint, markdown, Pygments, Pillow, python-docx, markdown-it-py, cairosvg, pytest) and Node deps (mermaid-cli + Puppeteer Chromium) to ~/.md-publisher/runtime/. Takes ~2 minutes; downloads ~250 MB; subsequent runs reuse the cache."
+    }
+  ]
+}
