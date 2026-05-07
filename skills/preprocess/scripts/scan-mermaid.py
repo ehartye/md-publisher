@@ -87,6 +87,72 @@ def collect_nodes(source: str) -> tuple[list[str], set[str]]:
     return seen, tagged
 
 
+# classDiagram: only top-level class declarations are styleable nodes.
+# Methods/attributes inside the braces are not separate renderable targets.
+CLASS_DECL_RE = re.compile(r"^\s*class\s+([A-Za-z][\w_-]*)", re.MULTILINE)
+CLASS_RELATION_RE = re.compile(r"^\s*([A-Za-z][\w_-]*)\s+(?:<\||--|\*--|o--|\.\.)", re.MULTILINE)
+CLASS_RELATION_RHS_RE = re.compile(r"(?:<\||--|\*--|o--|\.\.)[>|*o.]*\s+([A-Za-z][\w_-]*)", re.MULTILINE)
+
+
+def collect_class_nodes(source: str) -> tuple[list[str], set[str]]:
+    """For classDiagram: only class-level identifiers, not methods."""
+    seen: list[str] = []
+    seen_set: set[str] = set()
+    for regex in (CLASS_DECL_RE, CLASS_RELATION_RE, CLASS_RELATION_RHS_RE):
+        for m in regex.finditer(source):
+            node = m.group(1)
+            if node not in seen_set:
+                seen_set.add(node)
+                seen.append(node)
+    tagged: set[str] = set()
+    for m in BARE_TAGGED_RE.finditer(source):
+        tagged.add(m.group(1))
+    return seen, tagged
+
+
+# stateDiagram: state names from transitions and state declarations.
+STATE_TRANS_RE = re.compile(r"^\s*([A-Za-z][\w_-]*)\s*-->", re.MULTILINE)
+STATE_TRANS_RHS_RE = re.compile(r"-->\s*([A-Za-z][\w_-]*)", re.MULTILINE)
+STATE_DECL_RE = re.compile(r"^\s*state\s+\"[^\"]*\"\s+as\s+([A-Za-z][\w_-]*)", re.MULTILINE)
+
+
+def collect_state_nodes(source: str) -> tuple[list[str], set[str]]:
+    """For stateDiagram: state identifiers only."""
+    seen: list[str] = []
+    seen_set: set[str] = set()
+    for regex in (STATE_DECL_RE, STATE_TRANS_RE, STATE_TRANS_RHS_RE):
+        for m in regex.finditer(source):
+            node = m.group(1)
+            if node not in seen_set:
+                seen_set.add(node)
+                seen.append(node)
+    tagged: set[str] = set()
+    for m in BARE_TAGGED_RE.finditer(source):
+        tagged.add(m.group(1))
+    return seen, tagged
+
+
+# mindmap: root and branch nodes. Indentation-based; identifiers in
+# double-parens ((root)), brackets [Branch], or plain text.
+MINDMAP_NODE_RE = re.compile(r"^\s+([A-Za-z][\w_-]*)\s*[\[\(\{]", re.MULTILINE)
+MINDMAP_ROOT_RE = re.compile(r"^\s+root\(\(([^)]+)\)\)", re.MULTILINE)
+
+
+def collect_mindmap_nodes(source: str) -> tuple[list[str], set[str]]:
+    """For mindmap: branch identifiers."""
+    seen: list[str] = []
+    seen_set: set[str] = set()
+    for m in MINDMAP_NODE_RE.finditer(source):
+        node = m.group(1)
+        if node not in seen_set:
+            seen_set.add(node)
+            seen.append(node)
+    tagged: set[str] = set()
+    for m in BARE_TAGGED_RE.finditer(source):
+        tagged.add(m.group(1))
+    return seen, tagged
+
+
 def line_of_offset(text: str, offset: int) -> int:
     """1-based line number for a character offset in `text`."""
     return text.count("\n", 0, offset) + 1
@@ -105,7 +171,14 @@ def scan(source_path: Path) -> dict:
             "mindmap",
         )
         if supports_classdef:
-            node_ids, tagged = collect_nodes(block_src)
+            if diagram_type in ("classDiagram", "classDiagram-v2"):
+                node_ids, tagged = collect_class_nodes(block_src)
+            elif diagram_type in ("stateDiagram-v2", "stateDiagram"):
+                node_ids, tagged = collect_state_nodes(block_src)
+            elif diagram_type == "mindmap":
+                node_ids, tagged = collect_mindmap_nodes(block_src)
+            else:
+                node_ids, tagged = collect_nodes(block_src)
             untagged = [n for n in node_ids if n not in tagged]
         else:
             node_ids, tagged, untagged = [], set(), []
