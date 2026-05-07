@@ -88,7 +88,7 @@ If the slug already exists, the scaffold script refuses (returns exit code 1) un
 
 ### Step 4 — Preview
 
-Tell the user the preview is at `~/.md-publisher/themes/<slug>/preview.html`. Suggest opening it in a browser:
+Tell the user the preview is at `~/.md-publisher/themes/<slug>/preview.html`. The preview now includes three sample mermaid diagrams (flowchart with the four classDef colors, ER, and classDiagram) so the author can verify diagram styling at the same time as typography. Suggest opening it in a browser:
 - Windows: `start <path>`
 - macOS: `open <path>`
 - Linux: `xdg-open <path>`
