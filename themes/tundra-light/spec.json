@@ -1,0 +1,35 @@
+{
+  "slug": "tundra-light",
+  "name": "tundra",
+  "mode": "light",
+  "displayName": "TUNDRA",
+  "tagline": "Nordic calm. Tall serif, generous whitespace, teal as a whisper.",
+  "fonts": {
+    "serif": "Cormorant Garamond",
+    "sans": "Karla",
+    "mono": "Source Code Pro",
+    "display": "Cormorant Garamond"
+  },
+  "palette": {
+    "bg": "#FFFFFF",
+    "paper": "#FFFFFF",
+    "ink": "#2D3436",
+    "ink_soft": "#737D84",
+    "accent": "#0A8270",
+    "accent_alt": "#E8F0EE",
+    "rule": "#D1D8DC",
+    "code_bg": "#F4F6F7",
+    "code_text": "#2D3436",
+    "table_stripe": "#F8F9FA"
+  },
+  "mermaid": {
+    "tagStyling": {
+      "ingress": {"fill": "#FFFFFF", "stroke": "#0A8270", "color": "#2D3436", "strokeWidth": 2},
+      "core": {"fill": "#FFFFFF", "stroke": "#737D84", "color": "#2D3436", "strokeWidth": 1},
+      "transform": {"fill": "#F4F6F7", "stroke": "#737D84", "color": "#2D3436", "strokeWidth": 1},
+      "bridge": {"fill": "transparent", "stroke": "#D1D8DC", "color": "#737D84", "strokeWidth": 1, "strokeDasharray": "4 3"}
+    },
+    "fontFamily": "Karla, sans-serif",
+    "lineColor": "#737D84"
+  }
+}

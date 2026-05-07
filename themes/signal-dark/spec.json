@@ -1,0 +1,35 @@
+{
+  "slug": "signal-dark",
+  "name": "signal",
+  "mode": "dark",
+  "displayName": "SIGNAL",
+  "tagline": "Field manual density. Condensed sans, safety orange, zero ornamentation.",
+  "fonts": {
+    "serif": "Barlow",
+    "sans": "Barlow",
+    "mono": "Inconsolata",
+    "display": "Barlow Condensed"
+  },
+  "palette": {
+    "bg": "#141517",
+    "paper": "#1C1E21",
+    "ink": "#DEE2E6",
+    "ink_soft": "#868E96",
+    "accent": "#FF6B35",
+    "accent_alt": "#2A2420",
+    "rule": "#2A2D31",
+    "code_bg": "#1A1C1F",
+    "code_text": "#DEE2E6",
+    "table_stripe": "#18191C"
+  },
+  "mermaid": {
+    "tagStyling": {
+      "ingress": {"fill": "#1C1E21", "stroke": "#FF6B35", "color": "#DEE2E6", "strokeWidth": 2},
+      "core": {"fill": "#1C1E21", "stroke": "#DEE2E6", "color": "#DEE2E6", "strokeWidth": 2},
+      "transform": {"fill": "#1A1C1F", "stroke": "#868E96", "color": "#DEE2E6", "strokeWidth": 1},
+      "bridge": {"fill": "transparent", "stroke": "#2A2D31", "color": "#868E96", "strokeWidth": 1, "strokeDasharray": "4 3"}
+    },
+    "fontFamily": "Barlow, sans-serif",
+    "lineColor": "#868E96"
+  }
+}

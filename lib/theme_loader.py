@@ -10,8 +10,9 @@ Two levels of theme storage, checked in order:
                              bridge classDef colors, palette, fonts)
 2. **Built-in themes** at `${CLAUDE_PLUGIN_ROOT}/themes/<slug>/` — ship with
    the plugin (atlas-light, atlas-dark, phosphor-light, phosphor-dark,
-   arcade-light, arcade-dark, default). The classDef color data for built-in
-   themes lives in the aggregate `themes/theme-spec.json`.
+   arcade-light, arcade-dark, bloom-light, bloom-dark, default). Modern
+   built-ins carry a per-directory `spec.json`; the aggregate
+   `themes/theme-spec.json` remains a legacy fallback for older families.
 
 Slug convention:
   - Mode-aware themes: f"{name}-{mode}"  e.g. "atlas-light", "phosphor-dark"
@@ -298,17 +299,26 @@ def _theme_dir_for(slug: str) -> tuple[Path, bool]:
     )
 
 
-def _load_builtin_spec_block(name: str, mode: str | None) -> dict | None:
-    """Pull a single-theme spec block from the aggregate built-in spec.
+def _load_builtin_spec_block(name: str, mode: str | None, theme_dir: Path | None = None) -> dict | None:
+    """Load a built-in theme's spec block.
 
-    Returns None for mode-less / no-spec-data themes (e.g. "default" — which
-    uses neutral mermaid styling and doesn't need classDef injection).
+    Prefer the per-directory `themes/<slug>/spec.json` shape used by modern
+    built-ins. Fall back to the legacy aggregate `themes/theme-spec.json` for
+    older families that still resolve palette/fonts from that file.
+    Returns None for mode-less / no-spec-data themes (e.g. "default").
     """
+    slug = _slug(name, mode) if name != DEFAULT_THEME_SLUG else DEFAULT_THEME_SLUG
+    spec_path = runtime.plugin_root() / "themes" / slug / "spec.json"
+    if spec_path.exists():
+        return json.loads(spec_path.read_text(encoding="utf-8"))
+
     aggregate = runtime.plugin_root() / "themes" / "theme-spec.json"
-    if not aggregate.exists():
-        return None
-    spec = json.loads(aggregate.read_text(encoding="utf-8"))
-    return spec.get("themes", {}).get(name)
+    if aggregate.exists():
+        spec = json.loads(aggregate.read_text(encoding="utf-8"))
+        block = spec.get("themes", {}).get(name)
+        if block is not None:
+            return block
+    return None
 
 
 def resolve_selection(
@@ -335,7 +345,7 @@ def resolve_selection(
             if spec_path.exists() else None
         )
     else:
-        spec_block = _load_builtin_spec_block(name, mode)
+        spec_block = _load_builtin_spec_block(name, mode, theme_dir)
 
     palette: Palette | None = None
     fonts: Fonts | None = None
@@ -350,23 +360,36 @@ def resolve_selection(
         else:
             fonts = _fonts_from_css(css_path)
     else:
-        # Built-in: use the per-family resolver against the aggregate spec.
+        # Built-in: modern themes use flat per-dir spec.json blocks; older ones
+        # still resolve from the aggregate family spec.
         if spec_block:
-            if spec_block.get("fonts"):
+            if "fonts" in spec_block and any(k in spec_block["fonts"] for k in ("serif", "sans", "mono", "display")):
+                fonts = _fonts_from_user_spec(spec_block["fonts"])
+                if name == "arcade":
+                    fonts = Fonts(
+                        serif=fonts.serif,
+                        sans=fonts.sans,
+                        mono="JetBrains Mono",
+                        display=fonts.display,
+                    )
+            elif spec_block.get("fonts"):
                 try:
                     fonts = _resolve_fonts(name, spec_block["fonts"])
                 except (ValueError, KeyError):
-                    # Fallback for families not explicitly handled (e.g. default)
                     fonts = _fonts_from_css(css_path)
             else:
                 fonts = _fonts_from_css(css_path)
-            # Resolve palette: use explicit mode, or fall back to "light" for
-            # mode-less themes (e.g. default) that still declare modes.light.
-            effective_mode = mode or "light"
-            if "modes" in spec_block and effective_mode in spec_block["modes"]:
-                palette = _resolve_palette(name, spec_block["modes"][effective_mode])
+
+            if "palette" in spec_block:
+                palette = _palette_from_user_spec(spec_block["palette"])
             else:
-                palette = _palette_from_css(css_path)
+                # Resolve palette: use explicit mode, or fall back to "light" for
+                # mode-less themes (e.g. default) that still declare modes.light.
+                effective_mode = mode or "light"
+                if "modes" in spec_block and effective_mode in spec_block["modes"]:
+                    palette = _resolve_palette(name, spec_block["modes"][effective_mode])
+                else:
+                    palette = _palette_from_css(css_path)
 
     return ThemeSelection(
         slug=slug,

@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><title>TUNDRA preview</title>
+<style>
+/* ============================================================================
+ * tundra-light.css — TUNDRA theme, light variant.
+ * Nordic extreme minimalism: tall serif hierarchy, generous whitespace,
+ * restrained teal accents, and almost invisible ornament.
+ * ============================================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Karla:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Source+Code+Pro:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap');
+
+:root {
+    --bg:           #FFFFFF;
+    --paper:        #FFFFFF;
+    --ink:          #2D3436;
+    --ink-soft:     #737D84;
+    --accent:       #0A8270;
+    --accent-soft:  #E8F0EE;
+    --rule:         #D1D8DC;
+    --code-bg:      #F4F6F7;
+    --code-text:    #2D3436;
+    --table-stripe: #F8F9FA;
+
+    --font-display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+    --font-body:    "Karla", "Helvetica Neue", Arial, sans-serif;
+    --font-sans:    "Karla", "Helvetica Neue", Arial, sans-serif;
+    --font-mono:    "Source Code Pro", "SF Mono", Consolas, monospace;
+
+    --size-body: 11pt;
+    --leading-body: 1.55;
+    --page-margin: 1in;
+}
+
+@page {
+    size: letter;
+    margin: var(--page-margin);
+    background: var(--bg);
+
+    @bottom-center {
+        content: counter(page);
+        font-family: var(--font-sans);
+        font-size: 9pt;
+        font-weight: 400;
+        color: var(--ink-soft);
+    }
+    @top-right {
+        content: string(doc-title);
+        font-family: var(--font-sans);
+        font-size: 8.5pt;
+        font-weight: 400;
+        letter-spacing: 0.04em;
+        color: var(--ink-soft);
+    }
+}
+@page :first {
+    @top-right { content: ""; }
+    @bottom-center { content: ""; }
+}
+
+html {
+    font-family: var(--font-body);
+    font-size: var(--size-body);
+    line-height: var(--leading-body);
+    color: var(--ink);
+    background: var(--bg);
+    widows: 3;
+    orphans: 3;
+}
+body { margin: 0; padding: 0; }
+h1.doc-title { string-set: doc-title content(); }
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    color: var(--ink);
+    line-height: 1.12;
+    break-after: avoid-page;
+    page-break-after: avoid;
+}
+
+h1 {
+    font-size: 26pt;
+    font-weight: 700;
+    font-style: italic;
+    letter-spacing: -0.01em;
+    margin: 0 0 0.9em 0;
+    padding-bottom: 0.45em;
+    bookmark-level: 1;
+    break-before: page;
+    page-break-before: always;
+}
+h1::after {
+    content: "";
+    display: block;
+    width: 48px;
+    height: 0.5px;
+    background: var(--accent);
+    margin-top: 0.45em;
+}
+h1.doc-title {
+    break-before: auto;
+    page-break-before: auto;
+    margin-top: 0;
+}
+h1.cover-title::after { display: none; }
+
+h2 {
+    font-size: 18pt;
+    font-weight: 600;
+    font-style: normal;
+    letter-spacing: -0.01em;
+    color: var(--accent);
+    margin: 1.8em 0 0.6em 0;
+    bookmark-level: 2;
+}
+
+h3 {
+    font-size: 14pt;
+    font-weight: 600;
+    font-style: italic;
+    letter-spacing: 0;
+    color: var(--accent);
+    margin: 1.5em 0 0.45em 0;
+    bookmark-level: 3;
+}
+
+h4, h5, h6 {
+    font-family: var(--font-sans);
+    font-size: 10.5pt;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    color: var(--ink);
+    margin: 1.2em 0 0.35em 0;
+    bookmark-level: 4;
+}
+
+p {
+    margin: 0 0 0.9em 0;
+    text-align: justify;
+    hyphens: auto;
+}
+
+a {
+    color: var(--accent);
+    text-decoration: none;
+    border-bottom: 0.5px solid var(--rule);
+}
+strong { font-weight: 600; }
+em { font-style: italic; }
+
+code {
+    font-family: var(--font-mono);
+    font-weight: 300;
+    font-size: 0.9em;
+    background: var(--code-bg);
+    border: 1px solid var(--rule);
+    border-radius: 0;
+    padding: 0.06em 0.28em;
+    line-height: 1;
+    color: var(--code-text);
+}
+pre code {
+    background: transparent;
+    border: none;
+    padding: 0;
+    font-size: inherit;
+    line-height: inherit;
+    border-radius: 0;
+}
+
+pre {
+    font-family: var(--font-mono);
+    font-weight: 300;
+    font-size: 9pt;
+    line-height: 1.55;
+    background: var(--code-bg);
+    color: var(--code-text);
+    border: 1px solid var(--rule);
+    border-radius: 0;
+    padding: 0.8em 0.95em;
+    margin: 1em 0 1.15em 0;
+    overflow: hidden;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    break-inside: avoid;
+    page-break-inside: avoid;
+}
+.codehilite { margin: 1em 0 1.15em 0; break-inside: avoid; page-break-inside: avoid; }
+.codehilite pre { margin: 0; }
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.1em 0 1.4em 0;
+    font-family: var(--font-sans);
+    font-size: 10pt;
+    color: var(--ink);
+}
+thead { display: table-header-group; }
+th, td {
+    padding: 0.5em 0.75em;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--rule);
+}
+th {
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 9pt;
+    color: var(--accent);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--rule);
+    background: transparent;
+}
+tbody tr:nth-child(even) td { background: var(--table-stripe); }
+th[style*="right"], td[style*="right"] { text-align: right; }
+th[style*="center"], td[style*="center"] { text-align: center; }
+
+figure.mermaid {
+    margin: 1.2em auto 1.4em auto;
+    text-align: center;
+    background: var(--paper);
+    padding: 0.35em 0.45em;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    break-before: avoid;
+    page-break-before: avoid;
+}
+figure.mermaid svg {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+    max-height: 6in;
+    width: auto;
+    height: auto;
+}
+figure.mermaid figcaption {
+    font-family: var(--font-sans);
+    font-size: 9pt;
+    color: var(--ink-soft);
+    margin-top: 0.5em;
+}
+figure.mermaid.oversized {
+    break-before: page;
+    break-after: page;
+    page-break-before: always;
+    page-break-after: always;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    margin: 0;
+}
+figure.mermaid.oversized svg { max-width: 6.5in; max-height: 9in; width: auto; height: auto; }
+
+ul, ol { margin: 0.55em 0 1em 1.45em; padding: 0; }
+li { margin: 0.24em 0; }
+
+blockquote {
+    margin: 1em 0 1.2em 0;
+    padding: 0.15em 0 0.15em 0.9em;
+    border-left: 1px solid var(--accent);
+    background: transparent;
+    color: var(--ink-soft);
+    font-family: var(--font-sans);
+    font-style: italic;
+    break-inside: avoid;
+    page-break-inside: avoid;
+}
+blockquote p { text-align: left; }
+
+hr {
+    border: none;
+    width: 2in;
+    height: 0;
+    border-top: 0.5px solid var(--rule);
+    margin: 1.7em auto;
+}
+
+nav#toc { break-after: page; page-break-after: always; }
+nav#toc h2.toc-title {
+    font-family: var(--font-display);
+    font-size: 24pt;
+    font-weight: 700;
+    font-style: italic;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    margin: 0 0 1.15em 0;
+    break-before: auto;
+    page-break-before: auto;
+    bookmark-level: none;
+}
+nav#toc ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+nav#toc ol ol { margin-left: 1.1em; }
+nav#toc li { margin: 0.4em 0; }
+nav#toc a {
+    display: block;
+    color: var(--ink);
+    border-bottom: none;
+    font-family: var(--font-sans);
+    font-weight: 400;
+    text-decoration: none;
+}
+nav#toc li.toc-h1 > a { font-size: 11.5pt; }
+nav#toc li.toc-h2 > a { font-size: 10.25pt; color: var(--ink-soft); padding-left: 0.55em; }
+nav#toc a::after {
+    content: leader('. ') target-counter(attr(href), page);
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-soft);
+    font-weight: 400;
+}
+
+.preview-page { width: 7in; margin: 1in auto; background: var(--bg); padding: 1in; }
+.mermaid-fig { margin: 1.5em 0; padding: 0.5em; background: var(--paper); border: 1px solid var(--rule); border-radius: 4px; }
+.mermaid-fig figcaption { font-family: var(--font-sans); font-size: 9pt; color: var(--ink-soft); margin-top: 0.4em; text-align: center; }
+.mermaid-fig svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+.mermaid-source { font-family: var(--font-mono); font-size: 0.8em; background: var(--code-bg); padding: 0.5em; overflow-x: auto; }
+.mermaid-fallback-note { font-family: var(--font-sans); font-size: 8pt; color: var(--ink-soft); font-style: italic; }
+</style></head>
+<body><div class="preview-page">
+<h1>TUNDRA</h1>
+<p style="color: var(--ink-soft); font-style: italic;">Nordic calm. Tall serif, generous whitespace, teal as a whisper.</p>
+<h2>Section heading</h2>
+<p>The quick brown fox jumps over the lazy dog. Body text in <em>Cormorant Garamond</em>; an <a href="#">accent link</a> like this.</p>
+<h3>Subsection heading</h3>
+<p>The h3 level uses an accent left border to create visual hierarchy without overwhelming the page.</p>
+<pre><code>def example():
+    return "code block"</code></pre>
+<table><thead><tr><th>Column</th><th>Column</th></tr></thead>
+<tbody><tr><td>Row data</td><td>More data</td></tr></tbody></table>
+
+<h2>Diagram preview</h2>
+<figure class="mermaid-fig">
+<pre class="mermaid-source">flowchart LR
+    classDef ingress   fill:#FFFFFF,stroke:#0A8270,color:#2D3436,stroke-width:2
+    classDef core      fill:#FFFFFF,stroke:#737D84,color:#2D3436,stroke-width:1
+    classDef transform fill:#F4F6F7,stroke:#737D84,color:#2D3436,stroke-width:1
+    classDef bridge    fill:transparent,stroke:#D1D8DC,color:#737D84,stroke-width:1,stroke-dasharray:4 3
+    A[Input]:::ingress --> B[Validate]:::transform
+    B --> C[Process]:::core
+    C --> D{Decision}:::bridge
+    D --> E[Output]:::ingress
+</pre><p class="mermaid-fallback-note">(install runtime then re-scaffold to see live diagrams)</p>
+<figcaption>Flowchart with classDef tags</figcaption>
+</figure>
+<figure class="mermaid-fig">
+<pre class="mermaid-source">erDiagram
+    CUSTOMER {
+        string id PK
+        string name
+        string email
+    }
+    ORDER {
+        string id PK
+        string customer_id FK
+        decimal total
+        date placed_at
+    }
+    CUSTOMER ||--o{ ORDER : places
+</pre><p class="mermaid-fallback-note">(install runtime then re-scaffold to see live diagrams)</p>
+<figcaption>ER diagram (themed via mermaid-config)</figcaption>
+</figure>
+<figure class="mermaid-fig">
+<pre class="mermaid-source">classDiagram
+    class Engine:::ingress {
+        +run()
+        +stop()
+    }
+    class Worker {
+        +process(task)
+    }
+    class Queue {
+        +enqueue(item)
+        +dequeue() item
+    }
+    Engine --> Queue
+    Engine --> Worker
+    Worker --> Queue
+</pre><p class="mermaid-fallback-note">(install runtime then re-scaffold to see live diagrams)</p>
+<figcaption>Class diagram with <code>:::ingress</code> header tag</figcaption>
+</figure>
+
+<p style="margin-top: 1em; font-family: var(--font-sans); font-size: 9pt; color: var(--ink-soft);">
+&mdash; TUNDRA &middot; theme preview</p>
+</div></body></html>

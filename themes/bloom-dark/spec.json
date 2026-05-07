@@ -1,0 +1,35 @@
+{
+  "slug": "bloom-dark",
+  "name": "bloom",
+  "mode": "dark",
+  "displayName": "BLOOM",
+  "tagline": "Botanical warmth. Wonky serif, forest ink, rose as punctuation.",
+  "fonts": {
+    "serif": "Fraunces",
+    "sans": "Libre Franklin",
+    "mono": "Victor Mono",
+    "display": "Fraunces"
+  },
+  "palette": {
+    "bg": "#121F12",
+    "paper": "#1A2B1A",
+    "ink": "#F5F0E1",
+    "ink_soft": "#A8B8A0",
+    "accent": "#E07B6C",
+    "accent_alt": "#2A3A25",
+    "rule": "#2A3A2A",
+    "code_bg": "#162216",
+    "code_text": "#F5F0E1",
+    "table_stripe": "#141F14"
+  },
+  "mermaid": {
+    "tagStyling": {
+      "ingress": {"fill": "#1A2B1A", "stroke": "#E07B6C", "color": "#F5F0E1", "strokeWidth": 2},
+      "core": {"fill": "#1A2B1A", "stroke": "#A8B8A0", "color": "#F5F0E1", "strokeWidth": 1},
+      "transform": {"fill": "#162216", "stroke": "#A8B8A0", "color": "#F5F0E1", "strokeWidth": 1},
+      "bridge": {"fill": "transparent", "stroke": "#2A3A2A", "color": "#A8B8A0", "strokeWidth": 1, "strokeDasharray": "4 3"}
+    },
+    "fontFamily": "Libre Franklin, sans-serif",
+    "lineColor": "#E07B6C"
+  }
+}

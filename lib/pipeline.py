@@ -104,10 +104,19 @@ def build_cover_html(
     date: str | None,
     attribution: str,
 ) -> str:
-    """Render the cover-page HTML block. Inserted before the TOC in the body."""
+    """Render the cover-page HTML block. Inserted before the TOC in the body.
+
+    Includes decorative ``<div>`` elements (cover-ornament, cover-rule-top,
+    cover-rule-bottom) that themes can style for richer title pages.  Themes
+    that don't target these selectors get the base layout only — zero visual
+    regression.
+    """
     parts = ['<header class="cover">']
+    parts.append('  <div class="cover-ornament"></div>')
     parts.append(f'  <h1 class="cover-title">{html_escape(title)}</h1>')
+    parts.append('  <div class="cover-rule-top"></div>')
     parts.append('  <div class="cover-rule"></div>')
+    parts.append('  <div class="cover-rule-bottom"></div>')
     if subtitle:
         parts.append(f'  <p class="cover-subtitle">{html_escape(subtitle)}</p>')
     meta_items = []
@@ -144,11 +153,20 @@ header.cover {
     min-height: 9in;
     padding: 0;
 }
+header.cover .cover-ornament {
+    /* Decorative element above the title — hidden unless themed. */
+    display: none;
+}
 header.cover .cover-title {
     margin: 2.6in 0 0.3in 0;
     line-height: 1.05;
     border: none;
     padding: 0;
+}
+header.cover .cover-rule-top,
+header.cover .cover-rule-bottom {
+    /* Extra rule elements for multi-rule compositions — hidden unless themed. */
+    display: none;
 }
 header.cover .cover-rule {
     margin: 0.3in 0;

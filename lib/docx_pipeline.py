@@ -61,8 +61,8 @@ def build_docx(
     if theme_selection.palette is None or theme_selection.fonts is None:
         raise ValueError(
             f"build_docx requires a themed ThemeSelection (palette/fonts is "
-            f"None — likely the 'default' theme was passed in; pass an "
-            f"atlas/phosphor/arcade selection or a user theme with palette "
+            f"None — likely the 'default' theme was passed in; pass a built-in themed selection "
+            f"(e.g. atlas/phosphor/arcade/bloom) or a user theme with palette "
             f"+ fonts in spec.json). Got slug={theme_selection.slug!r}."
         )
 

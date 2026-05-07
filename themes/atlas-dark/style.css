@@ -101,6 +101,7 @@ h1.doc-title {
     page-break-before: auto;
     margin-top: 0;
 }
+h1.cover-title::after { display: none; }
 
 h2 {
     font-style: normal;
@@ -111,7 +112,21 @@ h2 {
     margin: 1.4em 0 0.5em 0;
     bookmark-level: 2;
 }
-h3 { font-size: 13pt; font-weight: 600; margin: 1.1em 0 0.4em 0; bookmark-level: 3; }
+h3 {
+    font-family: var(--font-sans);
+    font-size: 10.5pt;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    margin: 1.4em 0 0.4em 0;
+    bookmark-level: 3;
+}
+h3::before {
+    content: "— ";
+    color: var(--accent);
+    font-weight: 400;
+}
 h4, h5, h6 { font-size: 11.5pt; font-weight: 600; margin: 1em 0 0.3em 0; bookmark-level: 4; }
 
 p { margin: 0 0 0.6em 0; text-align: justify; hyphens: auto; }
@@ -157,8 +172,6 @@ table {
     margin: 0.9em 0;
     font-family: var(--font-sans);
     font-size: 10pt;
-    break-inside: avoid;
-    page-break-inside: avoid;
     color: var(--ink);
 }
 thead { display: table-header-group; }

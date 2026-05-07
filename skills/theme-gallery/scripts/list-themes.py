@@ -119,8 +119,19 @@ def _resolve_builtin_fonts(family: str, fonts: dict) -> dict:
     return result
 
 
-def builtin_summary_for(name: str, mode: str | None) -> dict:
-    """Pull displayName/tagline/audience/palette/fonts for a built-in theme."""
+def builtin_summary_for(name: str, mode: str | None, theme_dir: Path) -> dict:
+    """Pull displayName/tagline/palette/fonts for a built-in theme."""
+    direct_spec = theme_dir / "spec.json"
+    if direct_spec.exists():
+        spec = json.loads(direct_spec.read_text(encoding="utf-8"))
+        return {
+            "displayName": spec.get("displayName", name),
+            "tagline":     spec.get("tagline", ""),
+            "audience":    spec.get("audience", ""),
+            "palette":     spec.get("palette", {}),
+            "fonts":       _unwrap_user_fonts(spec.get("fonts", {})),
+        }
+
     aggregate = PLUGIN_THEMES_DIR / "theme-spec.json"
     if not aggregate.exists():
         return {}
@@ -191,7 +202,7 @@ def collect(theme_dir: Path, source_label: str) -> list[dict]:
         name, mode = name_from_slug(slug)
         summary = (
             user_summary_for(entry) if source_label == "user"
-            else builtin_summary_for(name, mode)
+            else builtin_summary_for(name, mode, entry)
         )
         out.append({
             "slug": slug,

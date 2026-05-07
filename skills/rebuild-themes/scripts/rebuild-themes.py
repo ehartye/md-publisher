@@ -153,10 +153,10 @@ def regenerate_preview(theme_dir: Path, spec: dict, mermaid_config_path: Path) -
 
 
 def backup_existing(theme_dir: Path, ts: str) -> Path:
-    """Copy current mermaid-config.json + preview.html to .backup-<ts>/. Returns dir."""
+    """Copy current mermaid-config.json, preview.html, cover.css to .backup-<ts>/. Returns dir."""
     backup_dir = theme_dir / f".backup-{ts}"
     backup_dir.mkdir(parents=True, exist_ok=True)
-    for fname in ("mermaid-config.json", "preview.html"):
+    for fname in ("mermaid-config.json", "preview.html", "cover.css"):
         src = theme_dir / fname
         if src.exists():
             shutil.copy2(src, backup_dir / fname)
@@ -178,6 +178,12 @@ def migrate_theme(theme_dir: Path, *, apply: bool, backup: bool) -> dict:
     # (mmdc reads the config to apply theme variables).
     new_cfg = regenerate_mermaid_config(theme_dir, spec)
     (theme_dir / "mermaid-config.json").write_text(new_cfg, encoding="utf-8")
+
+    # Regenerate cover.css from the current template (picks up decorative
+    # improvements like triple-rule, ornament, etc.).
+    subs = _spec_to_substitution_dict(spec)
+    new_cover = _scaffold.substitute(_scaffold.COVER_CSS_TEMPLATE, subs)
+    (theme_dir / "cover.css").write_text(new_cover, encoding="utf-8")
 
     new_preview = regenerate_preview(theme_dir, spec, theme_dir / "mermaid-config.json")
     (theme_dir / "preview.html").write_text(new_preview, encoding="utf-8")

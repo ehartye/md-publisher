@@ -1,0 +1,318 @@
+/* ============================================================================
+ * signal-light.css — SIGNAL theme, light variant.
+ *
+ * Industrial field manual density: condensed uppercase heads, compact body copy,
+ * safety-orange emphasis, and zero ornament beyond hard rules and borders.
+ * ============================================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Barlow:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inconsolata:wght@300;400;500;700&display=swap');
+
+:root {
+    --bg:           #F0EDE8;
+    --paper:        #FFFFFF;
+    --ink:          #212529;
+    --ink-soft:     #6C757D;
+    --accent:       #E8590C;
+    --accent-soft:  #EDE5DC;
+    --rule:         #C9C2B8;
+    --code-bg:      #E8E4DD;
+    --code-text:    #212529;
+    --table-stripe: #F0EDE8;
+
+    --font-display: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+    --font-body:    "Barlow", "Helvetica Neue", Arial, sans-serif;
+    --font-sans:    "Barlow", "Helvetica Neue", Arial, sans-serif;
+    --font-mono:    "Inconsolata", "SF Mono", Consolas, monospace;
+
+    --size-body: 10.5pt;
+    --leading-body: 1.45;
+    --page-margin: 1in;
+}
+
+@page {
+    size: letter;
+    margin: var(--page-margin);
+    background: var(--bg);
+
+    @bottom-center {
+        content: counter(page);
+        font-family: var(--font-sans);
+        font-size: 9pt;
+        font-weight: 500;
+        color: var(--ink-soft);
+    }
+    @top-right {
+        content: string(doc-title);
+        font-family: var(--font-sans);
+        font-size: 9pt;
+        font-weight: 500;
+        color: var(--ink-soft);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+}
+@page :first {
+    @top-right { content: ""; }
+    @bottom-center { content: ""; }
+}
+
+html {
+    font-family: var(--font-body);
+    font-size: var(--size-body);
+    line-height: var(--leading-body);
+    color: var(--ink);
+    background: var(--bg);
+    widows: 3;
+    orphans: 3;
+}
+body { margin: 0; padding: 0; }
+h1.doc-title { string-set: doc-title content(); }
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--ink);
+    line-height: 1.12;
+    break-after: avoid-page;
+    page-break-after: avoid;
+}
+
+h1 {
+    font-family: var(--font-display);
+    font-size: 24pt;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 0 0 0.55em 0;
+    padding-bottom: 0.42em;
+    bookmark-level: 1;
+    break-before: page;
+    page-break-before: always;
+}
+h1::after {
+    content: "";
+    display: block;
+    width: 96px;
+    height: 3px;
+    background: var(--accent);
+    margin-top: 0.35em;
+}
+h1.doc-title {
+    break-before: auto;
+    page-break-before: auto;
+    margin-top: 0;
+}
+h1.cover-title::after { display: none; }
+
+h2 {
+    font-family: var(--font-display);
+    font-size: 16pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin: 1.3em 0 0.45em 0;
+    bookmark-level: 2;
+}
+
+h3 {
+    font-family: var(--font-display);
+    font-size: 11pt;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 1.15em 0 0.35em 0;
+    padding-left: 0.5em;
+    border-left: 4px solid var(--accent);
+    bookmark-level: 3;
+}
+
+h4, h5, h6 {
+    font-family: var(--font-sans);
+    font-size: 10.5pt;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin: 0.95em 0 0.3em 0;
+    bookmark-level: 4;
+}
+
+p {
+    margin: 0 0 0.55em 0;
+    text-align: left;
+    hyphens: none;
+}
+a {
+    color: var(--accent);
+    text-decoration: none;
+    border-bottom: none;
+}
+strong { font-weight: 700; }
+em { font-style: italic; }
+
+code {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    background: var(--code-bg);
+    border: 1px solid var(--rule);
+    border-radius: 0;
+    padding: 0.05em 0.28em;
+    line-height: 1;
+    color: var(--code-text);
+}
+pre code {
+    background: transparent;
+    border: none;
+    padding: 0;
+    font-size: inherit;
+    line-height: inherit;
+    border-radius: 0;
+}
+
+pre {
+    font-family: var(--font-mono);
+    font-weight: 400;
+    font-size: 9pt;
+    line-height: 1.45;
+    background: var(--code-bg);
+    color: var(--code-text);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--accent);
+    border-radius: 0;
+    padding: 0.65em 0.8em;
+    margin: 0.75em 0;
+    overflow: hidden;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    break-inside: avoid;
+    page-break-inside: avoid;
+}
+.codehilite { margin: 0.75em 0; break-inside: avoid; page-break-inside: avoid; }
+.codehilite pre { margin: 0; }
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.8em 0;
+    font-family: var(--font-sans);
+    font-size: 9.5pt;
+    color: var(--ink);
+}
+thead { display: table-header-group; }
+th, td {
+    padding: 0.35em 0.55em;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--rule);
+}
+th {
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 8.8pt;
+    color: var(--ink);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 2px solid var(--accent);
+    background: transparent;
+}
+tbody tr:nth-child(even) td { background: var(--table-stripe); }
+th[style*="right"], td[style*="right"] { text-align: right; }
+th[style*="center"], td[style*="center"] { text-align: center; }
+
+figure.mermaid {
+    margin: 0.9em auto;
+    text-align: center;
+    background: var(--paper);
+    padding: 0.45em;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    break-before: avoid;
+    page-break-before: avoid;
+}
+figure.mermaid svg {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+    max-height: 6in;
+    width: auto;
+    height: auto;
+}
+figure.mermaid figcaption {
+    font-family: var(--font-sans);
+    font-size: 8.5pt;
+    color: var(--ink-soft);
+    margin-top: 0.35em;
+}
+figure.mermaid.oversized {
+    break-before: page;
+    break-after: page;
+    page-break-before: always;
+    page-break-after: always;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    margin: 0;
+}
+figure.mermaid.oversized svg { max-width: 6.5in; max-height: 9in; width: auto; height: auto; }
+
+ul, ol { margin: 0.35em 0 0.7em 1.25em; padding: 0; }
+li { margin: 0.15em 0; }
+
+blockquote {
+    margin: 0.75em 0;
+    padding: 0.35em 0.85em;
+    border-left: 4px solid var(--accent);
+    background: var(--accent-soft);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-weight: 500;
+    break-inside: avoid;
+    page-break-inside: avoid;
+}
+
+hr {
+    border: none;
+    border-top: 2px solid var(--rule);
+    margin: 1em 0;
+}
+
+nav#toc { break-after: page; page-break-after: always; }
+nav#toc h2.toc-title {
+    font-family: var(--font-display);
+    font-size: 20pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ink);
+    margin: 0 0 0.8em 0;
+    padding-bottom: 0.28em;
+    border-bottom: 2px solid var(--accent);
+    break-before: auto;
+    page-break-before: auto;
+    bookmark-level: none;
+}
+nav#toc ol { list-style: none; margin: 0; padding: 0; counter-reset: toc-counter; }
+nav#toc ol ol { margin-left: 1em; }
+nav#toc li { margin: 0.25em 0; }
+nav#toc a {
+    display: block;
+    color: var(--ink);
+    border-bottom: none;
+    font-family: var(--font-sans);
+    text-decoration: none;
+}
+nav#toc li.toc-h1 > a {
+    font-size: 11pt;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-top: 0.45em;
+}
+nav#toc li.toc-h2 > a {
+    font-size: 10pt;
+    font-weight: 500;
+    color: var(--ink-soft);
+    padding-left: 0.5em;
+}
+nav#toc a::after {
+    content: leader('. ') target-counter(attr(href), page);
+    font-variant-numeric: tabular-nums;
+    color: var(--accent);
+    font-weight: 500;
+}

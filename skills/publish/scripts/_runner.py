@@ -67,7 +67,7 @@ def main() -> int:
         if sel.palette is None or sel.fonts is None:
             sys.stderr.write(
                 f"[runner] theme {sel.slug!r} has no palette/fonts data; "
-                f"DOCX requires a themed selection (atlas/phosphor/arcade "
+                f"DOCX requires a themed selection (atlas/phosphor/arcade/bloom "
                 f"with --mode, or a user theme with palette+fonts in "
                 f"spec.json). The 'default' theme is PDF-only.\n"
             )

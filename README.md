@@ -4,7 +4,7 @@ A plugin for Claude Code and GitHub Copilot CLI that turns markdown documents �
 
 ## What you get
 
-Six skills, six bundled themes, and Python pipelines that produce print-ready PDFs and editable DOCX with searchable mermaid text.
+Six skills, seven bundled theme families, and Python pipelines that produce print-ready PDFs and editable DOCX with searchable mermaid text.
 
 | Skill | What it does | Invoke as |
 |---|---|---|
@@ -12,7 +12,7 @@ Six skills, six bundled themes, and Python pipelines that produce print-ready PD
 | **`preprocess`** | LLM-tag mermaid diagrams (`:::ingress / :::core / :::transform / :::bridge`) so themes color nodes by role. Also auto-fixes misplaced classDiagram tags (e.g. `:::core` inside a method line) by promoting them to the class header using priority `ingress > core > transform > bridge`. Rewrites the source in place; original gets backed up. | `/md-publisher:preprocess doc.md [--add-frontmatter]` |
 | **`theme-advisor`** | Interactive Q&A flow that produces a custom theme module under `~/.md-publisher/themes/<name>/`. The generated `preview.html` includes flowchart, ER, and classDiagram samples so authors can verify diagram styling before publishing. | `/md-publisher:theme-advisor` |
 | **`theme-gallery`** | List, preview, and pick from built-in + user-installed themes in one combined view. | `/md-publisher:theme-gallery` |
-| **`install-fonts`** | Per-user install of the Google Fonts the bundled themes use (Newsreader, Sora, JetBrains Mono, IBM Plex Mono, Audiowide, Bungee, Recursive). Cross-platform; no admin required. Run once after first DOCX build to fix font substitution. | `/md-publisher:install-fonts [--theme atlas --mode dark] [--dry-run]` |
+| **`install-fonts`** | Per-user install of the Google Fonts the bundled themes use (Newsreader, Sora, JetBrains Mono, IBM Plex Mono, Audiowide, Bungee, Recursive, Playfair Display, DM Sans, Fira Code, Cormorant Garamond, Karla, Source Code Pro, Barlow Condensed, Barlow, Inconsolata). Cross-platform; no admin required. Run once after first DOCX build to fix font substitution. | `/md-publisher:install-fonts [--theme atlas --mode dark] [--dry-run]` |
 | **`rebuild-themes`** | Refresh installed themes after a plugin upgrade by re-deriving `mermaid-config.json` + `preview.html` from each theme's `spec.json`. Backs up the pre-migration files per theme. | `/md-publisher:rebuild-themes [--theme <slug>]` |
 
 ## DOCX output
@@ -28,7 +28,7 @@ All themes — including `default` — support both PDF and DOCX output.
 
 ## Themes
 
-Six bundled themes (each in light + dark): **atlas** (corporate, customer-facing), **phosphor** (developer, terminal aesthetic), **arcade** (gamer, manual aesthetic), and **default** (clean editorial). Custom themes go to `~/.md-publisher/themes/<slug>/`. The gallery resolver checks user themes first, falls back to built-ins.
+Seven bundled theme families: **atlas** (corporate, customer-facing), **phosphor** (developer, terminal aesthetic), **arcade** (gamer, manual aesthetic), **meridian** (Art Deco geometric luxury), **signal** (industrial field manual), **tundra** (Nordic extreme minimal), and **default** (clean editorial). Atlas, phosphor, arcade, meridian, signal, and tundra each ship in light + dark. Custom themes go to `~/.md-publisher/themes/<slug>/`. The gallery resolver checks user themes first, falls back to built-ins.
 
 ## Output convention
 
@@ -64,7 +64,7 @@ md-publisher/
 │   ├── theme_loader.py     theme resolution + Palette/Fonts dataclasses
 │   ├── font_install.py     cross-platform per-user font install
 │   └── ...
-├── themes/             six built-in themes + theme-spec.json + pygments{,-dark}.css
+├── themes/             built-in themes + theme-spec.json + pygments{,-dark}.css
 └── runtime/            bootstrap (with --doctor mode) + dep manifests
 ```
 

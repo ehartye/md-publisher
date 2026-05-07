@@ -1,0 +1,35 @@
+{
+  "slug": "meridian-light",
+  "name": "meridian",
+  "mode": "light",
+  "displayName": "MERIDIAN",
+  "tagline": "Art Deco geometry in warm ivory and singular gold.",
+  "fonts": {
+    "serif": "Playfair Display",
+    "sans": "DM Sans",
+    "mono": "Fira Code",
+    "display": "Playfair Display"
+  },
+  "palette": {
+    "bg": "#FAF7F0",
+    "paper": "#FFFFFF",
+    "ink": "#1C1C1C",
+    "ink_soft": "#5A5A5A",
+    "accent": "#B8860B",
+    "accent_alt": "#EDE4D0",
+    "rule": "#D4C5A0",
+    "code_bg": "#F3EFE5",
+    "code_text": "#1C1C1C",
+    "table_stripe": "#FAF7F0"
+  },
+  "mermaid": {
+    "tagStyling": {
+      "ingress": {"fill": "#FFFFFF", "stroke": "#B8860B", "color": "#1C1C1C", "strokeWidth": 2},
+      "core": {"fill": "#FFFFFF", "stroke": "#5A5A5A", "color": "#1C1C1C", "strokeWidth": 1},
+      "transform": {"fill": "#F3EFE5", "stroke": "#5A5A5A", "color": "#1C1C1C", "strokeWidth": 1},
+      "bridge": {"fill": "transparent", "stroke": "#5A5A5A", "color": "#5A5A5A", "strokeWidth": 1, "strokeDasharray": "4 3"}
+    },
+    "fontFamily": "DM Sans, sans-serif",
+    "lineColor": "#B8860B"
+  }
+}

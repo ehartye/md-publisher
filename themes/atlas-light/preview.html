@@ -117,6 +117,7 @@ h1.doc-title {
     page-break-before: auto;
     margin-top: 0;
 }
+h1.cover-title::after { display: none; }
 
 h2 {
     font-family: var(--font-display);
@@ -129,10 +130,19 @@ h2 {
     bookmark-level: 2;
 }
 h3 {
-    font-size: 13pt;
+    font-family: var(--font-sans);
+    font-size: 10.5pt;
     font-weight: 600;
-    margin: 1.1em 0 0.4em 0;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    margin: 1.4em 0 0.4em 0;
     bookmark-level: 3;
+}
+h3::before {
+    content: "— ";
+    color: var(--accent);
+    font-weight: 400;
 }
 h4, h5, h6 {
     font-size: 11.5pt;
@@ -197,8 +207,6 @@ table {
     margin: 0.9em 0;
     font-family: var(--font-sans);
     font-size: 10pt;
-    break-inside: avoid;
-    page-break-inside: avoid;
 }
 thead { display: table-header-group; }
 th, td {
@@ -334,6 +342,8 @@ nav#toc a::after {
 <p style="color: var(--ink-soft); font-style: italic;">Editorial-trust serif on warm bone, red as punctuation only.</p>
 <h2>Section heading</h2>
 <p>The quick brown fox jumps over the lazy dog. Body text in <em>Newsreader</em>; an <a href="#">accent link</a> like this.</p>
+<h3>Subsection heading</h3>
+<p>The h3 level uses an accent left border to create visual hierarchy without overwhelming the page.</p>
 <pre><code>def example():
     return "code block"</code></pre>
 <table><thead><tr><th>Column</th><th>Column</th></tr></thead>

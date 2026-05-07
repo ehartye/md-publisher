@@ -101,7 +101,20 @@ h2 {
     bookmark-level: 2;
 }
 h2::before { content: "> "; color: var(--accent); font-weight: 700; }
-h3 { font-size: 12pt; font-weight: 700; margin: 1.1em 0 0.4em 0; bookmark-level: 3; color: var(--ink-emphasis); }
+h3 {
+    font-size: 12pt;
+    font-weight: 700;
+    margin: 1.1em 0 0.4em 0;
+    bookmark-level: 3;
+    color: var(--ink-emphasis);
+    padding-bottom: 0.25em;
+    border-bottom: 1px dotted var(--ink-soft);
+}
+h3::before {
+    content: "-- ";
+    color: var(--accent);
+    font-weight: 300;
+}
 h4, h5, h6 { font-size: 11pt; font-weight: 500; margin: 1em 0 0.3em 0; bookmark-level: 4; color: var(--ink-emphasis); }
 
 p { margin: 0 0 0.6em 0; text-align: left; hyphens: none; }
@@ -153,8 +166,6 @@ table {
     border-top: 1px solid var(--ink-soft);
     border-bottom: 1px solid var(--ink-soft);
     color: var(--ink);
-    break-inside: avoid;
-    page-break-inside: avoid;
 }
 thead { display: table-header-group; }
 th, td { padding: 0.45em 0.7em; text-align: left; vertical-align: top; }

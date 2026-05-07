@@ -1,0 +1,35 @@
+{
+  "slug": "meridian-dark",
+  "name": "meridian",
+  "mode": "dark",
+  "displayName": "MERIDIAN",
+  "tagline": "Art Deco geometry in warm shadow and bright gold.",
+  "fonts": {
+    "serif": "Playfair Display",
+    "sans": "DM Sans",
+    "mono": "Fira Code",
+    "display": "Playfair Display"
+  },
+  "palette": {
+    "bg": "#141414",
+    "paper": "#1E1E1E",
+    "ink": "#F0EBE0",
+    "ink_soft": "#A09885",
+    "accent": "#D4A843",
+    "accent_alt": "#2E2A22",
+    "rule": "#2E2A22",
+    "code_bg": "#1A1A1A",
+    "code_text": "#F0EBE0",
+    "table_stripe": "#1A1816"
+  },
+  "mermaid": {
+    "tagStyling": {
+      "ingress": {"fill": "#1E1E1E", "stroke": "#D4A843", "color": "#F0EBE0", "strokeWidth": 2},
+      "core": {"fill": "#1E1E1E", "stroke": "#A09885", "color": "#F0EBE0", "strokeWidth": 1},
+      "transform": {"fill": "#1A1A1A", "stroke": "#A09885", "color": "#F0EBE0", "strokeWidth": 1},
+      "bridge": {"fill": "transparent", "stroke": "#A09885", "color": "#A09885", "strokeWidth": 1, "strokeDasharray": "4 3"}
+    },
+    "fontFamily": "DM Sans, sans-serif",
+    "lineColor": "#D4A843"
+  }
+}

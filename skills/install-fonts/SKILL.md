@@ -1,6 +1,6 @@
 ---
 name: install-fonts
-description: This skill should be used when the user asks to "install theme fonts", "set up md-publisher fonts", "fix font substitution", "install Google Fonts for md-publisher", or invokes /md-publisher:install-fonts. Per-user installs the font families used by the bundled and user-installed themes (Newsreader, Sora, JetBrains Mono, IBM Plex Mono, Audiowide, Bungee, Recursive) without requiring administrator privileges. Cross-platform, Windows (HKCU registry), macOS (~/Library/Fonts), Linux (~/.local/share/fonts + fc-cache).
+description: This skill should be used when the user asks to "install theme fonts", "set up md-publisher fonts", "fix font substitution", "install Google Fonts for md-publisher", or invokes /md-publisher:install-fonts. Per-user installs the font families used by the bundled and user-installed themes (Newsreader, Sora, JetBrains Mono, IBM Plex Mono, Audiowide, Bungee, Recursive, Playfair Display, DM Sans, Fira Code) without requiring administrator privileges. Cross-platform, Windows (HKCU registry), macOS (~/Library/Fonts), Linux (~/.local/share/fonts + fc-cache).
 ---
 
 # install-fonts

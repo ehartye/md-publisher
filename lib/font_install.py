@@ -33,15 +33,24 @@ GH_RAW = "https://raw.githubusercontent.com/google/fonts/main/ofl/{slug}/{file}"
 
 # Map font display name -> github.com/google/fonts/ofl/<slug>
 FONT_SLUGS = {
-    "Newsreader":     "newsreader",
-    "Sora":           "sora",
-    "JetBrains Mono": "jetbrainsmono",
-    "IBM Plex Mono":  "ibmplexmono",
-    "IBM Plex Sans":  "ibmplexsans",
-    "IBM Plex Serif": "ibmplexserif",
-    "Audiowide":      "audiowide",
-    "Bungee":         "bungee",
-    "Recursive":      "recursive",
+    "Newsreader":          "newsreader",
+    "Sora":                "sora",
+    "JetBrains Mono":      "jetbrainsmono",
+    "IBM Plex Mono":       "ibmplexmono",
+    "IBM Plex Sans":       "ibmplexsans",
+    "IBM Plex Serif":      "ibmplexserif",
+    "Audiowide":           "audiowide",
+    "Bungee":              "bungee",
+    "Recursive":           "recursive",
+    "Playfair Display":    "playfairdisplay",
+    "DM Sans":             "dmsans",
+    "Fira Code":           "firacode",
+    "Cormorant Garamond":  "cormorantgaramond",
+    "Karla":               "karla",
+    "Source Code Pro":     "sourcecodepro",
+    "Barlow Condensed":    "barlowcondensed",
+    "Barlow":              "barlow",
+    "Inconsolata":         "inconsolata",
 }
 
 _GENERIC_CSS_FAMILIES = {

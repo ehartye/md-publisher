@@ -28,7 +28,7 @@ First run takes ~2 minutes and downloads ~250 MB. Subsequent runs reuse the cach
 |------|----------|
 | `skills/` | Skill definitions (SKILL.md + scripts/) |
 | `lib/` | Shared Python pipeline code (PDF, DOCX, theme loader, font installer) |
-| `themes/` | 6 bundled themes (atlas/phosphor/arcade × light/dark) + default |
+| `themes/` | 8 bundled themes (atlas/phosphor/arcade/signal × light/dark) + default |
 | `runtime/` | Bootstrap script + dependency manifests |
 | `~/.md-publisher/` | User data: runtime venv, node_modules, custom themes |
 

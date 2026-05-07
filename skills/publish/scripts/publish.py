@@ -35,6 +35,7 @@ ALL_BUILTIN_VARIANTS = [
     ("atlas", "light"), ("atlas", "dark"),
     ("phosphor", "light"), ("phosphor", "dark"),
     ("arcade", "light"), ("arcade", "dark"),
+    ("bloom", "light"), ("bloom", "dark"),
 ]
 
 
@@ -165,7 +166,7 @@ def _validate_explicit_output(args) -> int | None:
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     p.add_argument("source", type=Path, help="path to source markdown")
-    p.add_argument("--theme", default="default", help="theme name (default, atlas, phosphor, arcade, or custom)")
+    p.add_argument("--theme", default="default", help="theme name (default, atlas, phosphor, arcade, meridian, tundra, or custom)")
     p.add_argument("--mode", default="light", choices=["light", "dark"],
                    help="theme mode (ignored for mode-less themes)")
     p.add_argument("--output", type=Path, default=None,

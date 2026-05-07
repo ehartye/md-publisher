@@ -64,7 +64,10 @@ def tmp_build(tmp_path) -> Path:
     ("atlas",    "light"), ("atlas",    "dark"),
     ("phosphor", "light"), ("phosphor", "dark"),
     ("arcade",   "light"), ("arcade",   "dark"),
+    ("meridian", "light"), ("meridian", "dark"),
+    ("tundra",   "light"), ("tundra",   "dark"),
+    ("signal",   "light"), ("signal",   "dark"),
 ])
 def all_themes(request):
-    """Parametrize a test across all 6 bundled (theme, mode) variants."""
+    """Parametrize a test across all bundled light/dark theme variants."""
     return request.param

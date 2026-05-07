@@ -9,7 +9,8 @@ a full document), and the publish command to render with that theme.
 
 Bundled themes include: atlas (Newsreader+Sora+JetBrains Mono),
 phosphor (IBM Plex Mono everywhere), arcade (Audiowide+Bungee+Recursive
-+JetBrains Mono). All loaded from Google Fonts via the link in <head>.
++JetBrains Mono), and meridian (Playfair Display+DM Sans+Fira Code).
+All loaded from Google Fonts via the link in <head>.
 
 Output goes to ~/.md-publisher/gallery.html by default; pass --output to
 override. The skill typically opens this file in the user's browser.
@@ -41,7 +42,7 @@ GALLERY_HTML = """<!doctype html>
 <title>md-publisher · theme gallery</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,800;1,400&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@300;500&family=Sora:wght@400;500;600&family=IBM+Plex+Mono:ital,wght@0,300;0,500;0,700;1,300&family=Audiowide&family=Bungee&family=Recursive:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,800;1,400&family=Playfair+Display:ital,wght@0,400;0,700;0,800;1,400;1,700;1,800&family=DM+Sans:wght@400;500;700&family=Fira+Code:wght@300;400;500&family=JetBrains+Mono:wght@300;500&family=Sora:wght@400;500;600&family=IBM+Plex+Mono:ital,wght@0,300;0,500;0,700;1,300&family=Audiowide&family=Bungee&family=Recursive:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
     --chrome-bg: #FAF8F4;

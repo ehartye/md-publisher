@@ -124,6 +124,9 @@ h3 {
     font-weight: 600;
     margin: 1.1em 0 0.4em 0;
     bookmark-level: 3;
+    border-left: 3px solid var(--color-accent);
+    padding-left: 0.5em;
+    color: var(--color-text);
 }
 
 h4, h5, h6 {
@@ -206,9 +209,7 @@ table {
     border-collapse: collapse;
     margin: 0.9em 0;
     font-size: 10pt;
-    /* try to keep tables intact; if they must split, headers repeat */
-    break-inside: avoid;
-    page-break-inside: avoid;
+    /* headers repeat on each page when a table splits across pages */
 }
 
 thead {
@@ -432,6 +433,8 @@ nav#toc a::after {
 <p style="color: var(--ink-soft); font-style: italic;">Clean editorial serif — no mode variants, PDF-only.</p>
 <h2>Section heading</h2>
 <p>The quick brown fox jumps over the lazy dog. Body text in <em>Source Serif Pro</em>; an <a href="#">accent link</a> like this.</p>
+<h3>Subsection heading</h3>
+<p>The h3 level uses an accent left border to create visual hierarchy without overwhelming the page.</p>
 <pre><code>def example():
     return "code block"</code></pre>
 <table><thead><tr><th>Column</th><th>Column</th></tr></thead>

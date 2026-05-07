@@ -1,7 +1,7 @@
 {
   "$schema": "./theme-spec.schema.json",
   "version": "1.0",
-  "description": "Source of truth for ATLAS / PHOSPHOR / ARCADE theme tokens. Each toolchain (chromium, weasyprint, typst, pandoc-latex) translates this into its native theme format. Hand-edits to a single token here should propagate to all four approaches when each agent re-runs translation.",
+  "description": "Source of truth for ATLAS / PHOSPHOR / ARCADE / SIGNAL theme tokens. Each toolchain (chromium, weasyprint, typst, pandoc-latex) translates this into its native theme format. Hand-edits to a single token here should propagate to all four approaches when each agent re-runs translation.",
   "universalTags": {
     "ingress": "Entry / exit nodes. Sources, sinks, terminals in the data flow.",
     "core": "Primary processing units. The 'main thing' the diagram is about.",
@@ -394,6 +394,137 @@
         }
       }
     },
+    "signal": {
+      "displayName": "SIGNAL",
+      "audience": "engineering / field manual / standards-heavy",
+      "tagline": "Field manual density. Condensed sans, safety orange, zero ornamentation.",
+      "fonts": {
+        "display": {
+          "family": "Barlow Condensed",
+          "weight": 800,
+          "italic": false,
+          "_note": "All major heads are uppercase with tight vertical rhythm."
+        },
+        "body": {
+          "family": "Barlow",
+          "weight": 400,
+          "italic": false
+        },
+        "sansAccent": {
+          "family": "Barlow",
+          "weights": [
+            400,
+            500,
+            600,
+            700
+          ],
+          "_note": "Tables, TOC, running heads, and callout emphasis stay in the same family."
+        },
+        "mono": {
+          "family": "Inconsolata",
+          "weight": 400
+        }
+      },
+      "details": [
+        "h1 uses Barlow Condensed 800 in uppercase with a 96px x 3px safety-orange rule",
+        "h3 uses a 4px orange left border instead of decorative glyphs",
+        "Body copy is Barlow 400 at 10.5pt / 1.45 with left alignment and no hyphenation",
+        "Code blocks have a 1px rule border plus a 3px orange left rail and zero radius",
+        "Tables are dense with uppercase Barlow headers and orange header rules",
+        "Blockquotes use a 4px orange left rule and accent-soft fill",
+        "Cover is left-aligned with a full-width hazard bar and stencil-like uppercase title"
+      ],
+      "modes": {
+        "light": {
+          "bg": "#F0EDE8",
+          "paper": "#FFFFFF",
+          "ink": "#212529",
+          "inkSoft": "#6C757D",
+          "accent": "#E8590C",
+          "accentSoft": "#EDE5DC",
+          "rule": "#C9C2B8",
+          "codeBg": "#E8E4DD",
+          "codeText": "#212529",
+          "tableStripe": "#F0EDE8"
+        },
+        "dark": {
+          "bg": "#141517",
+          "paper": "#1C1E21",
+          "ink": "#DEE2E6",
+          "inkSoft": "#868E96",
+          "accent": "#FF6B35",
+          "accentSoft": "#2A2420",
+          "rule": "#2A2D31",
+          "codeBg": "#1A1C1F",
+          "codeText": "#DEE2E6",
+          "tableStripe": "#18191C"
+        }
+      },
+      "mermaid": {
+        "_note": "Signal keeps diagrams utilitarian: paper fills, restrained line work, orange reserved for ingress/warnings.",
+        "tagStyling": {
+          "light": {
+            "ingress": {
+              "fill": "#FFFFFF",
+              "stroke": "#E8590C",
+              "color": "#212529",
+              "strokeWidth": 2
+            },
+            "core": {
+              "fill": "#FFFFFF",
+              "stroke": "#212529",
+              "color": "#212529",
+              "strokeWidth": 2
+            },
+            "transform": {
+              "fill": "#E8E4DD",
+              "stroke": "#6C757D",
+              "color": "#212529",
+              "strokeWidth": 1
+            },
+            "bridge": {
+              "fill": "transparent",
+              "stroke": "#C9C2B8",
+              "color": "#6C757D",
+              "strokeWidth": 1,
+              "strokeDasharray": "4 3"
+            }
+          },
+          "dark": {
+            "ingress": {
+              "fill": "#1C1E21",
+              "stroke": "#FF6B35",
+              "color": "#DEE2E6",
+              "strokeWidth": 2
+            },
+            "core": {
+              "fill": "#1C1E21",
+              "stroke": "#DEE2E6",
+              "color": "#DEE2E6",
+              "strokeWidth": 2
+            },
+            "transform": {
+              "fill": "#1A1C1F",
+              "stroke": "#868E96",
+              "color": "#DEE2E6",
+              "strokeWidth": 1
+            },
+            "bridge": {
+              "fill": "transparent",
+              "stroke": "#2A2D31",
+              "color": "#868E96",
+              "strokeWidth": 1,
+              "strokeDasharray": "4 3"
+            }
+          }
+        },
+        "fontFamily": "Barlow, sans-serif",
+        "lineColor": {
+          "light": "#6C757D",
+          "dark": "#868E96"
+        }
+      }
+    },
     "default": {
       "displayName": "Default",
       "audience": "general-purpose / clean editorial",
@@ -451,7 +582,9 @@
       "out/transformers-phosphor-light.pdf",
       "out/transformers-phosphor-dark.pdf",
       "out/transformers-arcade-light.pdf",
-      "out/transformers-arcade-dark.pdf"
+      "out/transformers-arcade-dark.pdf",
+      "out/transformers-signal-light.pdf",
+      "out/transformers-signal-dark.pdf"
     ],
     "defaultFallback": "out/transformers.pdf",
     "_note": "When --theme is not specified, build emits the existing un-themed out/transformers.pdf for backwards-compat."

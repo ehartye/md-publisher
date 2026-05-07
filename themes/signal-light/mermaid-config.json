@@ -1,0 +1,94 @@
+{
+  "theme": "base",
+  "themeVariables": {
+    "background": "#FFFFFF",
+    "primaryColor": "#EDE5DC",
+    "primaryTextColor": "#212529",
+    "primaryBorderColor": "#E8590C",
+    "secondaryColor": "#E8E4DD",
+    "secondaryTextColor": "#212529",
+    "secondaryBorderColor": "#C9C2B8",
+    "tertiaryColor": "#EDE5DC",
+    "tertiaryTextColor": "#212529",
+    "tertiaryBorderColor": "#E8590C",
+    "lineColor": "#6C757D",
+    "fontFamily": "Barlow, sans-serif",
+    "mainBkg": "#FFFFFF",
+    "nodeBorder": "#E8590C",
+    "nodeTextColor": "#212529",
+    "edgeLabelBackground": "#FFFFFF",
+    "clusterBkg": "#EDE5DC",
+    "clusterBorder": "#C9C2B8",
+    "actorBkg": "#FFFFFF",
+    "actorBorder": "#E8590C",
+    "actorTextColor": "#212529",
+    "actorLineColor": "#6C757D",
+    "signalColor": "#6C757D",
+    "signalTextColor": "#212529",
+    "noteBkgColor": "#EDE5DC",
+    "noteTextColor": "#212529",
+    "noteBorderColor": "#E8590C",
+    "activationBkgColor": "#E8E4DD",
+    "activationBorderColor": "#6C757D",
+    "labelTextColor": "#212529",
+    "labelColor": "#212529",
+    "altBackground": "#EDE5DC",
+    "classText": "#212529",
+    "attributeBackgroundColorEven": "#FFFFFF",
+    "attributeBackgroundColorOdd": "#EDE5DC",
+    "pie1": "#E8590C",
+    "pie2": "#6C757D",
+    "pie3": "#EDE5DC",
+    "pie4": "#E8E4DD",
+    "pie5": "#C9C2B8",
+    "pie6": "#E8590C",
+    "pie7": "#6C757D",
+    "pie8": "#EDE5DC",
+    "pieStrokeColor": "#FFFFFF",
+    "pieTitleTextColor": "#212529",
+    "pieLegendTextColor": "#212529",
+    "sectionBkgColor": "#EDE5DC",
+    "sectionBkgColor2": "#FFFFFF",
+    "taskBkgColor": "#EDE5DC",
+    "activeTaskBkgColor": "#E8590C",
+    "activeTaskBorderColor": "#E8590C",
+    "doneTaskBkgColor": "#C9C2B8",
+    "doneTaskBorderColor": "#6C757D",
+    "taskTextColor": "#212529",
+    "taskTextDarkColor": "#212529",
+    "gridColor": "#C9C2B8",
+    "todayLineColor": "#E8590C"
+  },
+  "flowchart": {
+    "htmlLabels": false,
+    "useMaxWidth": true,
+    "nodeSpacing": 30,
+    "rankSpacing": 30
+  },
+  "sequence": {
+    "actorMargin": 50,
+    "noteMargin": 10,
+    "messageMargin": 35,
+    "useMaxWidth": true
+  },
+  "state": {
+    "useMaxWidth": true
+  },
+  "class": {
+    "useMaxWidth": true
+  },
+  "er": {
+    "useMaxWidth": true
+  },
+  "pie": {
+    "useMaxWidth": true
+  },
+  "gantt": {
+    "useMaxWidth": true
+  },
+  "mindmap": {
+    "useMaxWidth": true
+  },
+  "securityLevel": "loose",
+  "htmlLabels": false
+}
