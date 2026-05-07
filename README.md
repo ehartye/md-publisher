@@ -45,7 +45,10 @@ If anything goes wrong with native dep loading (especially WeasyPrint/Cairo on m
 
 ```
 md-publisher/
-├── .claude-plugin/plugin.json
+├── .claude-plugin/plugin.json       plugin manifest (used by both Claude Code and Copilot CLI)
+├── .github/
+│   ├── plugin/marketplace.json      Copilot CLI marketplace entry
+│   └── copilot-instructions.md      plugin context for Copilot CLI
 ├── README.md
 ├── skills/
 │   ├── publish/        SKILL.md + scripts/  (--format pdf|docx|both)
@@ -91,7 +94,7 @@ Both paths use the same skills and runtime — no difference in capability.
 
 ## Verifying the install
 
-After cloning and configuring as a Claude Code plugin, run the bootstrap probe in your terminal:
+After installing the plugin, run the bootstrap probe in your terminal:
 
 ```bash
 python <plugin-root>/runtime/bootstrap.py --status
