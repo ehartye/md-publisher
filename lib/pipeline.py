@@ -120,9 +120,10 @@ def build_cover_html(
         for item in meta_items:
             parts.append(f'    {item}')
         parts.append('  </div>')
-    parts.append(
-        f'  <footer class="cover-attribution">{html_escape(attribution)}</footer>'
-    )
+    if attribution:
+        parts.append(
+            f'  <footer class="cover-attribution">{html_escape(attribution)}</footer>'
+        )
     parts.append('</header>')
     return "\n".join(parts)
 
@@ -273,10 +274,7 @@ def build_pdf(
     cover_subtitle = front_matter.get("subtitle")
     cover_author = front_matter.get("author")
     cover_date = front_matter.get("date")
-    cover_attribution = (
-        front_matter.get("attribution")
-        or f"Built with WeasyPrint  ·  {theme_label}"
-    )
+    cover_attribution = front_matter.get("attribution") or ""
 
     print(f"[2/6] configuring markdown (mmdc: {mmdc_path})")
     mermaid_ext = MermaidExtension(
