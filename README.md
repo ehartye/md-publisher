@@ -1,6 +1,6 @@
 # md-publisher
 
-A Claude Code plugin that turns markdown documents — with embedded mermaid diagrams — into themed, searchable, paged PDFs *and* Microsoft Word DOCX. Built on WeasyPrint and python-docx after two structured toolchain bake-offs (see `~/repos/md-publisher-bakeoff/` for both rounds).
+A plugin for Claude Code and GitHub Copilot CLI that turns markdown documents — with embedded mermaid diagrams — into themed, searchable, paged PDFs *and* Microsoft Word DOCX. Built on WeasyPrint and python-docx after two structured toolchain bake-offs (see `~/repos/md-publisher-bakeoff/` for both rounds).
 
 ## What you get
 
@@ -72,6 +72,22 @@ User-data lives at `~/.md-publisher/`:
 ├── runtime/node_modules/    mermaid-cli + Chromium
 └── themes/<slug>/      user-created themes (theme-advisor output)
 ```
+
+## Installation
+
+### Claude Code
+
+```bash
+claude plugin install ehartye/md-publisher
+```
+
+### GitHub Copilot CLI
+
+```bash
+copilot plugin install ehartye/md-publisher
+```
+
+Both paths use the same skills and runtime — no difference in capability.
 
 ## Verifying the install
 
