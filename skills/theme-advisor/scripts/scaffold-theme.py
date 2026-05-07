@@ -254,7 +254,7 @@ MERMAID_CONFIG_TEMPLATE = {
         "nodeBorder": "{{ink_soft}}",
         "nodeTextColor": "{{ink}}",
         "edgeLabelBackground": "{{paper}}",
-        "clusterBkg": "{{code_bg}}",
+        "clusterBkg": "{{accent_soft}}",
         "clusterBorder": "{{rule}}",
         # Sequence diagram
         "actorBkg": "{{paper}}",
@@ -271,12 +271,12 @@ MERMAID_CONFIG_TEMPLATE = {
         "labelTextColor": "{{ink}}",
         # State diagram
         "labelColor": "{{ink}}",
-        "altBackground": "{{code_bg}}",
+        "altBackground": "{{accent_soft}}",
         # Class diagram
         "classText": "{{ink}}",
         # ER diagram
         "attributeBackgroundColorEven": "{{paper}}",
-        "attributeBackgroundColorOdd": "{{code_bg}}",
+        "attributeBackgroundColorOdd": "{{accent_soft}}",
         # Pie chart — 8 slices cycling accent variations
         "pie1": "{{accent}}",
         "pie2": "{{ink_soft}}",
@@ -290,7 +290,7 @@ MERMAID_CONFIG_TEMPLATE = {
         "pieTitleTextColor": "{{ink}}",
         "pieLegendTextColor": "{{ink}}",
         # Gantt
-        "sectionBkgColor": "{{code_bg}}",
+        "sectionBkgColor": "{{accent_soft}}",
         "sectionBkgColor2": "{{paper}}",
         "taskBkgColor": "{{accent_soft}}",
         "activeTaskBkgColor": "{{accent}}",
