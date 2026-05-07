@@ -262,6 +262,8 @@ def render_card(theme: dict) -> str:
         if audience else ""
     )
 
+    tagline_html = f'<p class="card-tagline">{tagline}</p>' if tagline else ""
+
     swatches_html = render_swatches(palette)
     typo_html = render_typography_sample(palette, fonts, summary.get("displayName") or theme["name"])
 
@@ -271,7 +273,7 @@ def render_card(theme: dict) -> str:
         f'    <div class="card-source {src}">{html_escape(src)}</div>'
         f'    <h2 class="card-name">{name_label}</h2>'
         f'    {mode_html}'
-        f'    {f"<p class=\'card-tagline\'>{tagline}</p>" if tagline else ""}'
+        f'    {tagline_html}'
         f'    {audience_html}'
         f'    <div class="card-slug">slug: <code>{slug}</code></div>'
         f'  </div>'
@@ -282,7 +284,7 @@ def render_card(theme: dict) -> str:
         f'  <div class="card-foot">'
         f'    /md-publisher:publish <code>&lt;doc.md&gt;</code> '
         f'    --theme <code>{html_escape(theme["name"])}</code>'
-        f'    {f"--mode <code>{mode}</code>" if mode else ""}'
+        f'    {"--mode <code>" + mode + "</code>" if mode else ""}'
         f'  </div>'
         f'</article>'
     )
