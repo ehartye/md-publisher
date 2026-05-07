@@ -6,7 +6,7 @@
   "description": "Turn markdown documents (with embedded mermaid) into themed, searchable, paged PDFs and Microsoft Word DOCX files via WeasyPrint and python-docx. 5 skills (publish, preprocess, theme-advisor, theme-gallery, install-fonts) + 6 bundled themes (atlas/phosphor/arcade in light + dark) + interactive custom-theme creation",
   "longDescription": "md-publisher is the WeasyPrint-based winner of a four-toolchain bake-off, now extended with a full DOCX pipeline (winner of a separate three-toolchain DOCX bake-off). It produces print-ready PDFs and editable Word documents from any markdown source, with full mermaid support — diagram node labels survive as searchable text in both formats (Ctrl+F finds them). Themes are interchangeable per (theme, mode) across both outputs, and a custom theme can be created interactively via the theme-advisor skill in under 5 minutes.\n\nIncludes: page covers with title/subtitle/author/date derived from YAML front matter or first h1; auto-resize for oversized mermaid diagrams; per-node coloring via universal `:::ingress / :::core / :::transform / :::bridge` tags; per-platform font detection + install via the install-fonts skill so DOCX output renders identically to PDF; separate user-themes directory under `~/.md-publisher/themes/` so customizations persist across plugin updates.",
 
-  "version": "0.2.2",
+  "version": "0.2.3",
   "author": {
     "name": "Eric Hartye",
     "email": "eric@hartye.com"
