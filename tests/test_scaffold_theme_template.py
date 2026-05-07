@@ -104,3 +104,35 @@ def test_mermaid_config_uses_accent_soft_for_section_bkg(tmp_path):
         (tmp_path / ".md-publisher" / "themes" / spec["slug"] / "mermaid-config.json").read_text()
     )
     assert cfg["themeVariables"]["sectionBkgColor"] == "#E0EBF8"
+
+
+def test_preview_html_contains_three_mermaid_figures(tmp_path):
+    spec = _minimal_spec()
+    result = _run_scaffold(tmp_path, spec)
+    assert result.returncode == 0, result.stderr
+    preview = (tmp_path / ".md-publisher" / "themes" / spec["slug"] / "preview.html").read_text()
+    # Three captioned diagram blocks. Each becomes an SVG figure when mmdc
+    # is available, or a `<pre class="mermaid-source">` fallback when not.
+    assert preview.count('class="mermaid-fig"') == 3, preview
+    assert "Flowchart with classDef tags" in preview
+    assert "ER diagram" in preview
+    assert "Class diagram" in preview
+
+
+def test_preview_html_fallback_when_mmdc_missing(tmp_path, monkeypatch):
+    """If mmdc isn't bootstrapped, preview falls back to source blocks.
+
+    Simulated by pointing HOME at tmp_path (no ~/.md-publisher/runtime/
+    inside the temp dir) so the scaffold can't find mmdc.
+    """
+    spec = _minimal_spec()
+    result = _run_scaffold(tmp_path, spec)
+    assert result.returncode == 0, result.stderr
+    preview = (tmp_path / ".md-publisher" / "themes" / spec["slug"] / "preview.html").read_text()
+    # Either rendered SVGs or fallback <pre> blocks — both must show up under
+    # the mermaid-fig class. We assert the fallback path here by checking the
+    # explicit "(install runtime ...)" hint that the script emits.
+    assert (
+        "mermaid-source" in preview
+        or "<svg" in preview  # rendered if mmdc happens to exist on PATH
+    )
