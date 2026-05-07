@@ -111,6 +111,109 @@ def apply_tags_to_text(text: str, decisions_by_index: dict[int, list[dict]]) -> 
     return _scan.FENCE_RE.sub(replace_block, text)
 
 
+# Priority for promoting misplaced classDiagram tags to the class header.
+# A class with even one ingress method becomes ingress; ties otherwise
+# resolve in this fixed order so the rewrite is deterministic.
+TAG_PRIORITY = ("ingress", "core", "transform", "bridge")
+
+
+def _strip_body_tags(body: str) -> str:
+    """Remove any `:::tag` markers from a class body (idempotent)."""
+    return re.sub(r"\s*:::\s*[A-Za-z][\w-]*", "", body)
+
+
+def apply_class_tag_promotions(text: str, promotions: list[dict]) -> tuple[str, list[str]]:
+    """Apply class_tag_promotions to a markdown text. Returns (new_text, warnings).
+
+    For each promotion entry `{index, class_name, winning_tag}`:
+      - If class_name is None: append a warning, leave source alone.
+      - If the class has an explicit `class Foo { ... }` header: rewrite header
+        to add the winning tag (or keep an existing header tag if present),
+        then strip all `:::tag` markers from the body.
+      - If the class is declared bare (`class Foo` with no body): rewrite the
+        header to `class Foo:::winning_tag`. (No body to strip.)
+    """
+    warnings: list[str] = []
+
+    # Index promotions per (block_index, class_name) — last-wins on duplicate.
+    by_block: dict[int, list[dict]] = {}
+    for p in promotions:
+        by_block.setdefault(p["index"], []).append(p)
+
+    blocks_processed = [0]
+
+    def replace_block(m: re.Match[str]) -> str:
+        idx = blocks_processed[0]
+        blocks_processed[0] += 1
+        block_promotions = by_block.get(idx, [])
+        if not block_promotions:
+            return m.group(0)
+        block_src = m.group(2)
+        for promo in block_promotions:
+            cls = promo["class_name"]
+            tag = promo["winning_tag"]
+            if cls is None:
+                warnings.append(
+                    f"orphan class promotion (block {idx}, tag {tag!r}): "
+                    "no `class Foo` header found; skipping"
+                )
+                continue
+            block_src = _promote_one_class(block_src, cls, tag)
+        return f"```mermaid\n{block_src}\n```"
+
+    new_text = _scan.FENCE_RE.sub(replace_block, text)
+    return new_text, warnings
+
+
+def _promote_one_class(block_src: str, class_name: str, winning_tag: str) -> str:
+    """Rewrite a single class within a block's mermaid source.
+
+    Order of operations:
+      1. Find `class <name> [:::existing] [{ body }]`.
+      2. If the class has a body, strip body :::tag markers regardless.
+      3. If the header already has a tag, KEEP it (do not overwrite).
+         Otherwise insert `:::winning_tag` after the class name.
+      4. If the class has no body (bare `class Foo`), only step 3 applies.
+    """
+    # With-body form. Note: the trailing `\s*` from the original plan was
+    # moved out of `head_prefix` and into `gap` so that re-emission keeps the
+    # ` ` between header and `{` (avoids `class Foo :::core{` mis-spacing).
+    body_pattern = re.compile(
+        rf"(class\s+{re.escape(class_name)})(:::[A-Za-z][\w-]*)?(\s*)\{{(.*?)\}}",
+        re.DOTALL,
+    )
+
+    def _sub_with_body(m: re.Match[str]) -> str:
+        head_prefix, existing_tag, gap, body = m.group(1), m.group(2), m.group(3), m.group(4)
+        stripped_body = _strip_body_tags(body)
+        if existing_tag:
+            tag_part = existing_tag  # keep existing
+        else:
+            tag_part = f":::{winning_tag}"
+        # Ensure at least one space between header (incl. tag) and `{`
+        gap_out = gap if gap else " "
+        return f"{head_prefix}{tag_part}{gap_out}{{{stripped_body}}}"
+
+    new_block, n_subs = body_pattern.subn(_sub_with_body, block_src, count=1)
+    if n_subs:
+        return new_block
+
+    # Bare-form fallback: `class Foo` on its own line, no body
+    bare_pattern = re.compile(
+        rf"(^\s*class\s+{re.escape(class_name)}\s*)(:::[A-Za-z][\w-]*)?(\s*$)",
+        re.MULTILINE,
+    )
+
+    def _sub_bare(m: re.Match[str]) -> str:
+        head_prefix, existing_tag, trailing = m.group(1), m.group(2), m.group(3)
+        if existing_tag:
+            return m.group(0)  # already tagged, no change
+        return f"{head_prefix}:::{winning_tag}{trailing}"
+
+    new_block, _ = bare_pattern.subn(_sub_bare, block_src, count=1)
+    return new_block
+
+
 def render_frontmatter(meta: dict) -> str:
     """Render a minimal YAML front matter block from a flat dict of strings."""
     lines = ["---"]
@@ -154,6 +257,16 @@ def main() -> int:
     # up empty timestamped backup directories.
     new_text = apply_tags_to_text(original_text, decisions_by_index)
 
+    # Apply class_tag_promotions (Task 2 of mermaid-diagnostics design).
+    # Promotions are independent of `tags`; they only touch classDiagram
+    # blocks identified by index in the decisions doc.
+    promotions = doc.get("class_tag_promotions", [])
+    promotion_warnings: list[str] = []
+    if promotions:
+        new_text, promotion_warnings = apply_class_tag_promotions(new_text, promotions)
+    for w in promotion_warnings:
+        sys.stderr.write(f"[apply-tags] warning: {w}\n")
+
     # Optional front matter prepend (only if not already present)
     fm = doc.get("frontmatter")
     if fm and not new_text.lstrip().startswith("---"):
@@ -173,7 +286,13 @@ def main() -> int:
 
     source.write_text(new_text, encoding="utf-8")
     n_tags = sum(len(v) for v in decisions_by_index.values())
-    print(f"[apply-tags] rewrote {source} ({n_tags} tag(s) applied)")
+    n_promos = len(promotions) - len(promotion_warnings)
+    summary = f"{n_tags} tag(s) applied"
+    if promotions:
+        summary += f", {n_promos} class promotion(s)"
+        if promotion_warnings:
+            summary += f", {len(promotion_warnings)} orphan-class warning(s)"
+    print(f"[apply-tags] rewrote {source} ({summary})")
     return 0
 
 
