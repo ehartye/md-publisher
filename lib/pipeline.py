@@ -63,6 +63,65 @@ def _normalize_emoji(text: str) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Table code-term line breaking
+# ---------------------------------------------------------------------------
+# Long identifiers inside <code> in table cells (e.g.
+# CMPL123QMS__Audit_Finding__c) have no natural break opportunities.
+# We inject <wbr> (zero-width break) after underscores, dots, colons,
+# slashes, and at camelCase boundaries so WeasyPrint can wrap them.
+
+_TABLE_CODE_RE = re.compile(
+    r"(<t[hd][^>]*>.*?</t[hd]>)", re.DOTALL | re.IGNORECASE
+)
+_INLINE_CODE_IN_CELL_RE = re.compile(
+    r"(<code>)(.*?)(</code>)", re.DOTALL
+)
+# Insert <wbr> after _, ., :, /, and at lowercase→uppercase (camelCase).
+_BREAK_AFTER = re.compile(r"([_.:/])")
+_BREAK_CAMEL = re.compile(r"([a-z])([A-Z])")
+
+
+def _inject_wbr(code_content: str) -> str:
+    """Insert <wbr> at natural break points inside a code span."""
+    # Double underscores (__) should stay together — break after the pair.
+    s = code_content.replace("__", "\x00DUNDER\x00")
+    s = _BREAK_AFTER.sub(r"\1<wbr>", s)
+    s = _BREAK_CAMEL.sub(r"\1<wbr>\2", s)
+    return s.replace("\x00DUNDER\x00", "__<wbr>")
+
+
+def _add_table_code_breaks(html: str) -> str:
+    """Post-process HTML to add <wbr> to <code> spans inside table cells."""
+    def process_cell(cell_match: re.Match[str]) -> str:
+        cell_html = cell_match.group(1)
+        return _INLINE_CODE_IN_CELL_RE.sub(
+            lambda m: m.group(1) + _inject_wbr(m.group(2)) + m.group(3),
+            cell_html,
+        )
+    return _TABLE_CODE_RE.sub(process_cell, html)
+
+
+# Detect tables with many columns and wrap them for landscape rendering.
+_TABLE_RE = re.compile(r"<table>(.*?)</table>", re.DOTALL)
+_TH_COUNT_RE = re.compile(r"<th[ >]")
+_WIDE_TABLE_THRESHOLD = 5  # columns that trigger landscape
+
+
+def _tag_wide_tables(html: str) -> str:
+    """Wrap tables with ≥5 columns in a landscape-page container."""
+    def maybe_wrap(m: re.Match[str]) -> str:
+        th_count = len(_TH_COUNT_RE.findall(m.group(1)))
+        if th_count >= _WIDE_TABLE_THRESHOLD:
+            return (
+                '<div class="landscape-page">'
+                f'<table class="wide-table">{m.group(1)}</table>'
+                '</div>'
+            )
+        return m.group(0)
+    return _TABLE_RE.sub(maybe_wrap, html)
+
+
+# ---------------------------------------------------------------------------
 # Fontconfig: reject Apple Color Emoji during PDF rendering
 # ---------------------------------------------------------------------------
 # On macOS, Pango/fontconfig selects Apple Color Emoji as a fallback for
@@ -432,6 +491,8 @@ def build_pdf(
     print(f"      mermaid figures rendered: {len(figures)}")
 
     print("[4/6] assigning heading ids and building TOC")
+    body_html = _add_table_code_breaks(body_html)
+    body_html = _tag_wide_tables(body_html)
     body_html, headings = assign_heading_ids(body_html)
     toc_html = render_toc(headings)
     print(f"      headings collected: {len(headings)} "

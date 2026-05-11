@@ -62,6 +62,14 @@
         letter-spacing: 0.04em;
     }
 }
+@page landscape-table {
+    size: letter landscape;
+    margin: 0.75in;
+}
+.landscape-page {
+    page: landscape-table;
+}
+
 @page :first {
     @top-right { content: ""; }
     @bottom-center { content: ""; }
@@ -237,6 +245,24 @@ th {
 tbody tr:nth-child(even) td { background: var(--table-stripe); }
 th[style*="right"], td[style*="right"] { text-align: right; }
 th[style*="center"], td[style*="center"] { text-align: center; }
+/* Inline code inside table cells: allow breaking at <wbr> points */
+td code, th code {
+    word-break: break-all;
+    overflow-wrap: break-word;
+    font-size: 0.85em;
+}
+
+/* Wide tables: shrink font and tighten padding to fit more columns.
+   Tables with 5+ columns automatically get the .wide-table class
+   injected by the pipeline, triggering a landscape page. */
+table.wide-table {
+    font-size: 8.5pt;
+}
+table.wide-table th,
+table.wide-table td {
+    padding: 0.3em 0.5em;
+}
+
 
 /* ---------- Mermaid figures ---------- */
 figure.mermaid {
