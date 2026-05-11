@@ -166,6 +166,7 @@ code {
     color: var(--code-text);
     overflow-wrap: anywhere;
 }
+del { text-decoration: line-through; opacity: 0.6; }
 pre code {
     background: transparent;
     border: none;

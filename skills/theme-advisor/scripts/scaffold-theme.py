@@ -190,6 +190,7 @@ em { font-style: italic; }
 code { font-family: var(--font-mono); font-size: 0.9em;
        background: var(--code-bg); border: 1px solid var(--rule);
        border-radius: 3px; padding: 0.05em 0.3em; line-height: 1; overflow-wrap: anywhere; }
+del { text-decoration: line-through; opacity: 0.6; }
 pre code { background: transparent; border: none; padding: 0;
            font-size: inherit; line-height: inherit; border-radius: 0; }
 

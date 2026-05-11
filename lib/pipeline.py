@@ -480,6 +480,7 @@ def build_pdf(
             "pymdownx.highlight",
             "tables",
             "attr_list",
+            "pymdownx.tilde",
             "smarty",
             "sane_lists",
         ],
