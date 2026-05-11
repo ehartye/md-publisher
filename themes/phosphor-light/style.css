@@ -179,6 +179,15 @@ pre {
 }
 .codehilite { margin: 0.8em 0; break-inside: avoid; page-break-inside: avoid; }
 .codehilite pre { margin: 0; }
+/* Code blocks inside list items: contain width and adjust spacing */
+li > .codehilite,
+li > pre {
+    margin: 0.5em 0;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: auto;
+}
+
 
 /* Tables: dashed top/bottom band, dashed under headers, dotted between rows */
 table {

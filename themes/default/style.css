@@ -198,6 +198,15 @@ pre {
 .codehilite pre {
     margin: 0;
 }
+/* Code blocks inside list items: contain width and adjust spacing */
+li > .codehilite,
+li > pre {
+    margin: 0.5em 0;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: auto;
+}
+
 
 /* ---------- Tables ---------- */
 table {

@@ -454,7 +454,7 @@ class MermaidExtension(Extension):
             classdef_lines=self.classdef_lines,
             output_format=self.output_format,
         )
-        # Priority 50 puts us before fenced_code (priority 25). Higher
+        # Priority 50 puts us before superfences (tree processor). Higher
         # priority preprocessors run first.
         md.preprocessors.register(self.preprocessor, "mermaid", 50)
 

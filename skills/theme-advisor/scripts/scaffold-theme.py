@@ -200,6 +200,13 @@ pre { font-family: var(--font-mono); font-size: 9pt; line-height: 1.4;
 .codehilite { margin: 0.8em 0; break-inside: avoid; page-break-inside: avoid; }
 .codehilite pre { margin: 0; }
 
+/* Code blocks inside list items */
+li > .codehilite,
+li > pre {
+    margin: 0.5em 0; max-width: 100%;
+    box-sizing: border-box; overflow-x: auto;
+}
+
 table { width: 100%; border-collapse: collapse; margin: 0.9em 0; font-size: 10pt;
         break-inside: avoid; page-break-inside: avoid; }
 thead { display: table-header-group; }

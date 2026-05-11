@@ -305,18 +305,19 @@ def build_pdf(
     md = markdown.Markdown(
         extensions=[
             mermaid_ext,
-            "fenced_code",
+            "pymdownx.superfences",
+            "pymdownx.highlight",
             "tables",
-            "codehilite",
             "attr_list",
             "smarty",
             "sane_lists",
         ],
         extension_configs={
-            "codehilite": {
+            "pymdownx.highlight": {
                 "css_class": "codehilite",
                 "guess_lang": False,
                 "linenums": False,
+                "use_pygments": True,
             },
         },
     )
