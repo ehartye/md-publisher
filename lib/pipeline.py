@@ -12,8 +12,10 @@ Stages:
 
 from __future__ import annotations
 
+import os
 import re
 import sys
+import tempfile
 from html import escape as html_escape
 from pathlib import Path
 
@@ -25,6 +27,103 @@ from .mermaid_processor import (
 )
 from .theme_loader import ThemeSelection, build_classdefs, pygments_css_path
 from .toc import assign_heading_ids, render_toc
+
+
+# ---------------------------------------------------------------------------
+# Emoji → text normalization
+# ---------------------------------------------------------------------------
+# Emoji-presentation characters that can't be embedded in PDF without Apple
+# Color Emoji (which PDF viewers can't reliably extract). Map each to the
+# closest text-presentation equivalent that ships in standard fonts.
+_EMOJI_TO_TEXT: dict[str, str] = {
+    "\u2705": "\u2713",   # ✅ → ✓  (check mark)
+    "\u274C": "\u2717",   # ❌ → ✗  (ballot X)
+    "\u2753": "?",        # ❓ → ?
+    "\u2754": "?",        # ❔ → ?
+    "\u2757": "!",        # ❗ → !
+    "\u2755": "!",        # ❕ → !
+    "\u2714": "\u2713",   # ✔ → ✓
+    "\u2716": "\u2717",   # ✖ → ✗
+    "\u26A0\uFE0F": "\u26A0",  # ⚠️ → ⚠ (strip emoji presentation selector)
+}
+# Variation selector U+FE0F forces emoji presentation; strip it so Pango
+# picks a text font instead of a color-emoji font.
+_VARIATION_SELECTOR = "\uFE0F"
+
+# Build a single-pass regex from the mapping keys (longest first).
+_EMOJI_RE = re.compile(
+    "|".join(re.escape(k) for k in sorted(_EMOJI_TO_TEXT, key=len, reverse=True))
+)
+
+
+def _normalize_emoji(text: str) -> str:
+    """Replace emoji-presentation characters with embeddable text glyphs."""
+    text = _EMOJI_RE.sub(lambda m: _EMOJI_TO_TEXT[m.group()], text)
+    return text.replace(_VARIATION_SELECTOR, "")
+
+
+# ---------------------------------------------------------------------------
+# Fontconfig: reject Apple Color Emoji during PDF rendering
+# ---------------------------------------------------------------------------
+# On macOS, Pango/fontconfig selects Apple Color Emoji as a fallback for
+# miscellaneous-symbol code points. WeasyPrint embeds a subset of the font
+# but PDF viewers (Preview, Acrobat) can't extract the COLR/CBDT tables
+# and emit "Cannot extract the embedded font" warnings.  We write a
+# temporary fontconfig override that rejects that font family so Pango falls
+# through to a text-symbol font (or .LastResort) instead.
+
+import contextlib
+
+_FONTCONFIG_REJECT_COLOR_EMOJI = """\
+<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
+<fontconfig>
+  <include ignore_missing="yes">{system_conf}</include>
+  <selectfont>
+    <rejectfont>
+      <pattern>
+        <patelt name="family"><string>Apple Color Emoji</string></patelt>
+      </pattern>
+    </rejectfont>
+  </selectfont>
+</fontconfig>
+"""
+
+
+@contextlib.contextmanager
+def _fontconfig_no_color_emoji():
+    """Temporarily override FONTCONFIG_FILE to block Apple Color Emoji."""
+    if sys.platform != "darwin":
+        yield
+        return
+
+    # Locate the system fontconfig config to include as a base.
+    system_conf = "/opt/homebrew/etc/fonts/fonts.conf"
+    if not Path(system_conf).exists():
+        system_conf = "/usr/local/etc/fonts/fonts.conf"
+    if not Path(system_conf).exists():
+        # Can't find system config — skip the override.
+        yield
+        return
+
+    old_val = os.environ.get("FONTCONFIG_FILE")
+    tmp = tempfile.NamedTemporaryFile(
+        mode="w", suffix=".conf", prefix="mdpub-fc-", delete=False
+    )
+    try:
+        tmp.write(_FONTCONFIG_REJECT_COLOR_EMOJI.format(system_conf=system_conf))
+        tmp.close()
+        os.environ["FONTCONFIG_FILE"] = tmp.name
+        yield
+    finally:
+        if old_val is None:
+            os.environ.pop("FONTCONFIG_FILE", None)
+        else:
+            os.environ["FONTCONFIG_FILE"] = old_val
+        try:
+            os.unlink(tmp.name)
+        except OSError:
+            pass
 
 
 HTML_TEMPLATE = """<!DOCTYPE html>
@@ -279,6 +378,7 @@ def build_pdf(
 
     print(f"[1/6] reading source: {source}")
     md_text_raw = source.read_text(encoding="utf-8")
+    md_text_raw = _normalize_emoji(md_text_raw)
 
     # Pull a YAML front-matter block off the top if present, then derive
     # cover-page metadata: title from front matter or first h1, subtitle /
@@ -379,7 +479,8 @@ def build_pdf(
     # base_url lets WeasyPrint resolve relative paths inside the HTML (mostly
     # absent in our generated doc, but stays safe). Use plugin_root so any
     # bundled-asset reference would resolve.
-    HTML(string=full_html, base_url=str(runtime.plugin_root())).write_pdf(str(output))
+    with _fontconfig_no_color_emoji():
+        HTML(string=full_html, base_url=str(runtime.plugin_root())).write_pdf(str(output))
     print(f"      PDF written: {output} "
           f"({output.stat().st_size // 1024} KB)")
     return output
