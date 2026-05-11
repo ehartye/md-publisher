@@ -70,12 +70,8 @@ def _normalize_emoji(text: str) -> str:
 # We inject <wbr> (zero-width break) after underscores, dots, colons,
 # slashes, and at camelCase boundaries so WeasyPrint can wrap them.
 
-_TABLE_CODE_RE = re.compile(
-    r"(<t[hd][^>]*>.*?</t[hd]>)", re.DOTALL | re.IGNORECASE
-)
-_INLINE_CODE_IN_CELL_RE = re.compile(
-    r"(<code>)(.*?)(</code>)", re.DOTALL
-)
+_TABLE_CODE_RE = None  # removed — superseded by _add_code_breaks
+_INLINE_CODE_IN_CELL_RE = None  # removed
 # Insert <wbr> after _, ., :, /, and at lowercase→uppercase (camelCase).
 _BREAK_AFTER = re.compile(r"([_.:/])")
 _BREAK_CAMEL = re.compile(r"([a-z])([A-Z])")
@@ -90,15 +86,31 @@ def _inject_wbr(code_content: str) -> str:
     return s.replace("\x00DUNDER\x00", "__<wbr>")
 
 
-def _add_table_code_breaks(html: str) -> str:
-    """Post-process HTML to add <wbr> to <code> spans inside table cells."""
-    def process_cell(cell_match: re.Match[str]) -> str:
-        cell_html = cell_match.group(1)
-        return _INLINE_CODE_IN_CELL_RE.sub(
-            lambda m: m.group(1) + _inject_wbr(m.group(2)) + m.group(3),
-            cell_html,
+# Match <code>…</code> spans that are NOT inside <pre> blocks.
+# We split the HTML on <pre>…</pre> regions and only process outside them.
+_PRE_SPLIT_RE = re.compile(
+    r"(<pre[\s>].*?</pre>)", re.DOTALL | re.IGNORECASE
+)
+_INLINE_CODE_RE = re.compile(r"(<code>)(.*?)(</code>)", re.DOTALL)
+_MIN_WBR_LEN = 12  # only inject <wbr> in code spans longer than this
+
+
+def _add_code_breaks(html: str) -> str:
+    """Add <wbr> to inline <code> spans outside <pre> blocks."""
+    parts = _PRE_SPLIT_RE.split(html)
+    for i, part in enumerate(parts):
+        # Odd-indexed parts are <pre>…</pre> — leave untouched.
+        if i % 2 == 1:
+            continue
+        parts[i] = _INLINE_CODE_RE.sub(
+            lambda m: (
+                m.group(1) + _inject_wbr(m.group(2)) + m.group(3)
+                if len(m.group(2)) >= _MIN_WBR_LEN
+                else m.group(0)
+            ),
+            part,
         )
-    return _TABLE_CODE_RE.sub(process_cell, html)
+    return "".join(parts)
 
 
 # Detect tables with many columns and wrap them for landscape rendering.
@@ -491,7 +503,7 @@ def build_pdf(
     print(f"      mermaid figures rendered: {len(figures)}")
 
     print("[4/6] assigning heading ids and building TOC")
-    body_html = _add_table_code_breaks(body_html)
+    body_html = _add_code_breaks(body_html)
     body_html = _tag_wide_tables(body_html)
     body_html, headings = assign_heading_ids(body_html)
     toc_html = render_toc(headings)

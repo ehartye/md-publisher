@@ -164,6 +164,7 @@ code {
     padding: 0.05em 0.3em;
     line-height: 1;
     color: var(--code-text);
+    overflow-wrap: anywhere;
 }
 pre code {
     background: transparent;
