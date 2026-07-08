@@ -48,6 +48,8 @@ FONT_SLUGS = {
     "Cormorant Garamond":  "cormorantgaramond",
     "Karla":               "karla",
     "Source Code Pro":     "sourcecodepro",
+    "Source Serif Pro":    "sourceserif4",
+    "Inter":               "inter",
     "Barlow Condensed":    "barlowcondensed",
     "Barlow":              "barlow",
     "Inconsolata":         "inconsolata",

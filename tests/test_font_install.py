@@ -18,6 +18,12 @@ def test_font_slug_map_covers_signal_google_fonts():
     assert FONT_SLUGS["Inconsolata"] == "inconsolata"
 
 
+def test_font_slug_map_covers_default_google_fonts():
+    """Default theme's Google Fonts must be installable for DOCX fidelity."""
+    assert FONT_SLUGS["Source Serif Pro"] == "sourceserif4"
+    assert FONT_SLUGS["Inter"] == "inter"
+
+
 def test_font_slug_map_covers_tundra_google_fonts():
     """Tundra's Google Fonts must be installable for DOCX fidelity."""
     assert FONT_SLUGS["Cormorant Garamond"] == "cormorantgaramond"

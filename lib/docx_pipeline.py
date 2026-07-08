@@ -60,10 +60,11 @@ def build_docx(
     """
     if theme_selection.palette is None or theme_selection.fonts is None:
         raise ValueError(
-            f"build_docx requires a themed ThemeSelection (palette/fonts is "
-            f"None — likely the 'default' theme was passed in; pass a built-in themed selection "
-            f"(e.g. atlas/phosphor/arcade/bloom) or a user theme with palette "
-            f"+ fonts in spec.json). Got slug={theme_selection.slug!r}."
+            f"build_docx requires a ThemeSelection with palette and fonts "
+            f"(both are None for slug={theme_selection.slug!r}). Ensure the "
+            f"theme's spec.json includes top-level 'palette' and 'fonts' "
+            f"blocks, or that its style.css declares the required CSS custom "
+            f"properties."
         )
 
     if build_dir is None:

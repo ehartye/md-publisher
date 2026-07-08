@@ -62,14 +62,13 @@ def main() -> int:
         )
     else:  # docx
         # The DOCX path requires structured palette + fonts on the
-        # ThemeSelection. The 'default' theme has no per-mode palette
-        # in spec data, so it can't be rendered to DOCX.
+        # ThemeSelection. Themes without a palette/fonts block in their
+        # spec.json (or resolvable from CSS vars) cannot produce DOCX.
         if sel.palette is None or sel.fonts is None:
             sys.stderr.write(
                 f"[runner] theme {sel.slug!r} has no palette/fonts data; "
-                f"DOCX requires a themed selection (atlas/phosphor/arcade/bloom "
-                f"with --mode, or a user theme with palette+fonts in "
-                f"spec.json). The 'default' theme is PDF-only.\n"
+                f"DOCX requires a themed selection with palette+fonts in "
+                f"spec.json (or resolvable from style.css custom properties).\n"
             )
             return 2
 

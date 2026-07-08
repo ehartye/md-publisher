@@ -528,7 +528,7 @@
     "default": {
       "displayName": "Default",
       "audience": "general-purpose / clean editorial",
-      "tagline": "Clean editorial serif \u2014 no mode variants, PDF-only.",
+      "tagline": "Clean editorial serif \u2014 no mode variants.",
       "fonts": {
         "body": {
           "family": "Source Serif Pro",

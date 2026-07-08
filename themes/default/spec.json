@@ -2,7 +2,7 @@
   "slug": "default",
   "name": "default",
   "displayName": "Default",
-  "tagline": "Clean editorial serif — no mode variants, PDF-only.",
+  "tagline": "Clean editorial serif — no mode variants.",
   "fonts": {
     "serif": "Source Serif Pro",
     "sans": "Inter",
