@@ -45,6 +45,7 @@ The publish script accepts:
 | `--output <path>` | derived | Override the output path. Extension must match `--format` (`.pdf` for `--format pdf`, `.docx` for `--format docx`). Ignored when `--all` is set or `--format both`. |
 | `--all` | off | Render every (theme × mode) combo for built-in themes (8 outputs per format; 16 with `--format both`). Ignores `--theme`, `--mode`, and `--output`. |
 | `--no-cover` | off | Suppress the cover page. Useful when concatenating with other docs as an appendix, or embedding into a larger document. |
+| `--no-toc` | off | Suppress the auto-generated table of contents. Use when the source markdown already has its own hand-written TOC section (heading ids are still assigned either way, so the hand-written TOC's `#anchor` links keep working). |
 | `--open` | off | Open the produced file(s) with the OS default viewer after build. |
 | `--format pdf\|docx\|both` | `pdf` | Output format. `pdf` (default) preserves existing behavior. `docx` builds a Microsoft Word document via python-docx. `both` produces sibling PDF + DOCX in the same `.md-publisher/<ts>/` dir. All themes support both formats. |
 

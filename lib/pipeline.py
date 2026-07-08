@@ -385,6 +385,7 @@ def build_pdf(
     output: Path,
     theme_selection: ThemeSelection,
     include_cover: bool = True,
+    include_toc: bool = True,
     build_dir: Path | None = None,
 ) -> Path:
     """Render `source` markdown to a paged PDF at `output`.
@@ -397,6 +398,11 @@ def build_pdf(
 
     `include_cover=False` suppresses the cover page entirely; useful for
     embeddable / multi-doc bundling where a cover would interrupt flow.
+
+    `include_toc=False` suppresses the auto-generated `<nav id="toc">`
+    block; useful when the source markdown already has its own hand-written
+    table of contents section and a second, tool-generated one would be
+    redundant.
 
     `build_dir` defaults to `<output.parent>/build/`; intermediate SVGs and
     the assembled HTML land there for debugging. Returns the output path.
@@ -507,7 +513,9 @@ def build_pdf(
     body_html = _add_code_breaks(body_html)
     body_html = _tag_wide_tables(body_html)
     body_html, headings = assign_heading_ids(body_html)
-    toc_html = render_toc(headings)
+    # assign_heading_ids always runs (even when include_toc=False) so a
+    # hand-written TOC's #anchor links in the body still resolve correctly.
+    toc_html = render_toc(headings) if include_toc else ""
     print(f"      headings collected: {len(headings)} "
           f"(h1={sum(1 for h in headings if h.level == 1)}, "
           f"h2={sum(1 for h in headings if h.level == 2)})")

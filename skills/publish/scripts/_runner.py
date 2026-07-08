@@ -12,7 +12,8 @@ Job document schema:
       "mode":            "light" | null,
       "format":          "pdf" | "docx",
       "explicit_output": "/abs/path/to/out.<ext>" | null,
-      "include_cover":   true
+      "include_cover":   true,
+      "include_toc":     true
     }
 
 This file is normally only run by publish.py — never directly by a user.
@@ -51,6 +52,7 @@ def main() -> int:
     )
     output_paths.ensure_parent(out)
     include_cover = bool(job.get("include_cover", True))
+    include_toc = bool(job.get("include_toc", True))
 
     if fmt == "pdf":
         from lib import pipeline  # noqa: E402
@@ -59,6 +61,7 @@ def main() -> int:
             output=out,
             theme_selection=sel,
             include_cover=include_cover,
+            include_toc=include_toc,
         )
     else:  # docx
         # The DOCX path requires structured palette + fonts on the
@@ -94,6 +97,7 @@ def main() -> int:
             output=out,
             theme_selection=sel,
             include_cover=include_cover,
+            include_toc=include_toc,
         )
 
     print(f"OUTPUT_PATH={out}")

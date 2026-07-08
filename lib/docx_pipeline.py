@@ -52,9 +52,15 @@ def build_docx(
     output: Path,
     theme_selection: ThemeSelection,
     include_cover: bool = True,
+    include_toc: bool = True,
     build_dir: Path | None = None,
 ) -> Path:
     """Render `source` markdown to a themed DOCX at `output`.
+
+    `include_toc=False` suppresses the auto-generated Word TOC field and its
+    "Contents" heading; useful when the source markdown already has its own
+    hand-written table of contents section and a second, tool-generated one
+    would be redundant.
 
     Returns the absolute output path. Raises on any pipeline failure.
     """
@@ -111,7 +117,8 @@ def build_docx(
         _set_narrow_margins(doc)
 
     # TOC.
-    insert_toc(doc, theme_selection)
+    if include_toc:
+        insert_toc(doc, theme_selection)
 
     # Body (mermaid markers already in body_md; the renderer dispatches
     # them via its html_block branch -> _try_handle_mermaid_html).

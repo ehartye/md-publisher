@@ -93,6 +93,7 @@ def run_one_build(
     ts: str | None,
     explicit_output: Path | None,
     include_cover: bool,
+    include_toc: bool,
     open_after: bool,
 ) -> Path:
     """Invoke the venv's Python to run a single build, return output path.
@@ -113,6 +114,7 @@ def run_one_build(
         "ts":              ts,
         "explicit_output": str(explicit_output) if explicit_output else None,
         "include_cover":   include_cover,
+        "include_toc":     include_toc,
     }
     py = venv_python()
     proc = subprocess.run(
@@ -175,6 +177,9 @@ def main() -> int:
                    help="render every built-in (theme x mode) — 6 PDFs (or 12 with --format both)")
     p.add_argument("--no-cover", action="store_true",
                    help="suppress the cover page")
+    p.add_argument("--no-toc", action="store_true",
+                   help="suppress the auto-generated table of contents "
+                        "(use when the source already has its own hand-written TOC)")
     p.add_argument("--open", action="store_true",
                    help="open the produced PDF(s) with the OS default viewer")
     p.add_argument("--format", default="pdf", choices=["pdf", "docx", "both"],
@@ -196,6 +201,7 @@ def main() -> int:
         return rc
 
     include_cover = not args.no_cover
+    include_toc = not args.no_toc
     formats = _formats_from_arg(args.format)
     outputs: list[Path] = []
 
@@ -213,6 +219,7 @@ def main() -> int:
                 outputs.append(run_one_build(
                     source=src, theme=theme, mode=mode, fmt=fmt, ts=ts,
                     explicit_output=None, include_cover=include_cover,
+                    include_toc=include_toc,
                     open_after=args.open,
                 ))
     else:
@@ -222,6 +229,7 @@ def main() -> int:
             outputs.append(run_one_build(
                 source=src, theme=args.theme, mode=mode, fmt=fmt, ts=ts,
                 explicit_output=args.output, include_cover=include_cover,
+                include_toc=include_toc,
                 open_after=args.open,
             ))
 
