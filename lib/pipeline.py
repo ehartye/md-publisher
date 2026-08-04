@@ -26,7 +26,7 @@ from .mermaid_processor import (
     MermaidExtension, MermaidPostprocessor, find_mmdc,
 )
 from .theme_loader import ThemeSelection, build_classdefs, pygments_css_path
-from .toc import assign_heading_ids, render_toc
+from .toc import assign_heading_ids, find_broken_anchors, render_toc
 
 
 # ---------------------------------------------------------------------------
@@ -519,6 +519,12 @@ def build_pdf(
     print(f"      headings collected: {len(headings)} "
           f"(h1={sum(1 for h in headings if h.level == 1)}, "
           f"h2={sum(1 for h in headings if h.level == 2)})")
+    broken = find_broken_anchors(body_html)
+    if broken:
+        print(f"      WARNING: {len(broken)} internal link(s) resolve to no "
+              f"heading id — these will render as dead links:")
+        for fragment in broken:
+            print(f"        #{fragment}")
 
     print("[5/6] assembling HTML document")
     print_css = css_path.read_text(encoding="utf-8")
