@@ -202,6 +202,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 <head>
     <meta charset="utf-8">
     <title>{title}</title>
+    <style>{base_content_css}</style>
     <style>{pygments_css}</style>
     <style>{print_css}</style>
     <style>{cover_css}</style>
@@ -212,6 +213,16 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 {body}
 </body>
 </html>
+"""
+
+# Minimal, theme-independent baseline for user-authored content images
+# (`![alt](path)` in the source markdown). No bundled theme defines an `img`
+# rule of its own, so without this, an image wider than its natural pixel
+# size renders larger than the page and gets clipped by WeasyPrint instead
+# of scaling down. Emitted first so any theme's own `style.css` can still
+# override it (equal-specificity `img` selectors resolve in source order).
+_BASE_CONTENT_CSS = """
+img { max-width: 100%; height: auto; }
 """
 
 
@@ -551,6 +562,7 @@ def build_pdf(
         body=body_html,
         toc=toc_html,
         cover=cover_html,
+        base_content_css=_BASE_CONTENT_CSS,
         print_css=print_css,
         pygments_css=pygments_css,
         cover_css=cover_css_text,
@@ -564,11 +576,17 @@ def build_pdf(
 
     print(f"[6/6] running WeasyPrint -> {output}")
     output.parent.mkdir(parents=True, exist_ok=True)
-    # base_url lets WeasyPrint resolve relative paths inside the HTML (mostly
-    # absent in our generated doc, but stays safe). Use plugin_root so any
-    # bundled-asset reference would resolve.
+    # base_url lets WeasyPrint resolve relative paths found in the HTML.
+    # The only relative paths that ever reach this HTML are user-authored
+    # image references (e.g. `![chart](graphics/chart.png)`) — mermaid
+    # diagrams are emitted as absolute `file://` URIs (mermaid_processor.py)
+    # and theme fonts load via absolute `https://` @import, so neither
+    # depends on base_url. Resolve against the source markdown's own
+    # directory (like every other markdown renderer does), not the plugin
+    # install directory — otherwise relative image paths in the user's
+    # document silently fail to embed.
     with _fontconfig_no_color_emoji():
-        HTML(string=full_html, base_url=str(runtime.plugin_root())).write_pdf(str(output))
+        HTML(string=full_html, base_url=str(source.parent)).write_pdf(str(output))
     print(f"      PDF written: {output} "
           f"({output.stat().st_size // 1024} KB)")
     return output
